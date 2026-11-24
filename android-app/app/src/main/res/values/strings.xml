@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">آوا (tiny-ava)</string>
+    <string name="tts_engine_name">آوا — گفتار فارسی آفلاین (tiny-ava)</string>
+    <string name="share_read_label">خواندن با آوا</string>
+</resources>
