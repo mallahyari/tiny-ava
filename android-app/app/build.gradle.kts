@@ -1,7 +1,17 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+val signingPropsFile = File(System.getProperty("user.home"), ".android/tiny-ava-signing.properties")
+val signingProps = Properties().apply {
+    if (signingPropsFile.isFile) {
+        signingPropsFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -18,10 +28,25 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+    }
 
-        ndk {
-            // Focus on real modern Android phones (ARM64 + ARM32) and x86_64 emulators
-            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a")
+            isUniversalApk = true
+        }
+    }
+
+    signingConfigs {
+        if (signingProps.containsKey("storeFile")) {
+            create("release") {
+                storeFile = File(signingProps.getProperty("storeFile"))
+                storePassword = signingProps.getProperty("storePassword")
+                keyAlias = signingProps.getProperty("keyAlias")
+                keyPassword = signingProps.getProperty("keyPassword")
+            }
         }
     }
 
@@ -32,6 +57,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (signingProps.containsKey("storeFile")) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
