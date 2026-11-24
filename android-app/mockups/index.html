@@ -104,17 +104,16 @@
   }
   .tb-toggle.active { background: #16a34a; color: #fff; }
 
-  /* Gallery of 4 Android screens */
+  /* Gallery of 5 Android screens */
   .gallery {
-    max-width: 1520px;
+    max-width: 1620px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(310px, 345px));
     gap: 24px;
+    justify-content: center;
     align-items: start;
   }
-  @media (max-width: 1420px) { .gallery { grid-template-columns: repeat(2, minmax(330px, 380px)); justify-content: center; } }
-  @media (max-width: 760px) { .gallery { grid-template-columns: minmax(310px, 380px); } }
 
   .screen-col { display: flex; flex-direction: column; gap: 10px; }
   .screen-label {
@@ -161,6 +160,18 @@
     font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
     background: var(--soft); color: var(--ink); border: 1px solid var(--line);
   }
+  .info-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--line);
+    background: var(--soft); color: var(--ink); font: 700 15px "Vazirmatn", sans-serif;
+    display: grid; place-items: center; cursor: pointer;
+  }
+  .link-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; background: var(--card); border: 1.5px solid var(--line);
+    border-radius: 14px; min-height: 54px; text-decoration: none; color: var(--ink);
+  }
+  .link-row strong { display: block; font-size: 14.5px; }
+  .link-row small { display: block; font-size: 12px; color: var(--muted); direction: ltr; text-align: right; }
 
   /* Body */
   .body { padding: 14px 16px 16px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -335,7 +346,10 @@
             <h2 class="appbar-title">آوا (tiny-ava)</h2>
             <div class="appbar-sub">موتور گفتار فارسی روی دستگاه</div>
           </div>
-          <span class="offline-pill">آفلاین</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="offline-pill">آفلاین</span>
+            <button class="info-btn" aria-label="درباره آوا">ⓘ</button>
+          </div>
         </div>
 
         <div class="body">
@@ -561,6 +575,69 @@
           <div class="nav-item"><i>🎚️</i>صدا</div>
           <div class="nav-item active"><i>📖</i>واژه‌نامه</div>
         </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: ABOUT & CREDITS -->
+  <div class="screen-col">
+    <div class="screen-label"><span>۵. درباره آوا و سازنده (از دکمه ⓘ)</span><span class="num">Screen 5</span></div>
+    <div class="phone">
+      <div class="viewport">
+        <div class="statusbar"><span>9:41</span><span>5G · 87%</span></div>
+        <div class="appbar">
+          <div>
+            <h2 class="appbar-title">درباره آوا</h2>
+            <div class="appbar-sub">نسخه ۱.۰.۰ · OncillaAI</div>
+          </div>
+          <span class="offline-pill">بازگشت →</span>
+        </div>
+
+        <div class="body">
+          <div class="card tb-focus" style="text-align:center; padding:18px 16px;">
+            <div style="font-size:24px; font-weight:800; color:var(--accent);">آوا · tiny-ava</div>
+            <div style="font-size:13.5px; margin-top:4px; font-weight:600;">ساخته‌شده توسط مهدی اللهیاری (OncillaAI)</div>
+            <div style="font-size:12.5px; color:var(--muted); margin-top:6px;">
+              تبدیل متن به گفتار فارسی سریع، سبک و ۱۰۰٪ آفلاین؛ طراحی‌شده با تمرکز ویژه بر دسترس‌پذیری و کاربران نابینا و کم‌بینا.
+            </div>
+          </div>
+
+          <a class="link-row" href="https://oncillaai.com" target="_blank" rel="noopener">
+            <div>
+              <strong>🌐 وب‌سایت OncillaAI</strong>
+              <small>oncillaai.com</small>
+            </div>
+            <span>↗</span>
+          </a>
+
+          <a class="link-row" href="https://huggingface.co/mehdi-hf/tiny-ava" target="_blank" rel="noopener">
+            <div>
+              <strong>🤗 صفحه مدل در Hugging Face</strong>
+              <small>huggingface.co/mehdi-hf/tiny-ava</small>
+            </div>
+            <span>↗</span>
+          </a>
+
+          <a class="link-row" href="mailto:mehdi@oncillaai.com">
+            <div>
+              <strong>✉️ گزارش تلفظ اشتباه یا پیشنهاد صدا</strong>
+              <small>mehdi@oncillaai.com</small>
+            </div>
+            <span>↗</span>
+          </a>
+
+          <div class="card" style="margin-top:auto;">
+            <div class="card-title">مشخصات مدل و مجوز</div>
+            <div style="font-size:12.5px; color:var(--muted); line-height:1.7;">
+              • موتور صدا: <strong>tiny-ava (پریسا، ۴.۵M)</strong> — CC BY 4.0<br>
+              • تبدیل خط به آوا: <strong>persian-g2p-tiny (۸.۳M)</strong> — MIT<br>
+              • کد برنامه: <strong>Apache-2.0</strong> (مبتنی بر معماری tiny-voca)<br>
+              • حریم خصوصی: بدون جمع‌آوری هیچ‌گونه داده
+            </div>
+          </div>
+        </div>
+
+        <div class="tb-toast">TalkBack: «آوا، ساخته‌شده توسط مهدی اللهیاری، OncillaAI. تبدیل متن به گفتار فارسی ۱۰۰ درصد آفلاین.»</div>
       </div>
     </div>
   </div>
