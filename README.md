@@ -12,6 +12,8 @@ A **4.5M-parameter (~18 MB PyTorch / ~20 MB ONNX)** Persian (Farsi) text-to-spee
 
 ## Android App (100% Offline Persian TalkBack Engine)
 
+![tiny-ava Android app running on Pixel 3 (High-Contrast accessibility mode)](assets/android-screenshots.png)
+
 The [`android-app/`](android-app/) app packages `tiny-ava` (`20.4 MB`) + `persian-g2p-tiny` (`8.4 MB`) inside a native Kotlin + Jetpack Compose + ONNX Runtime Android APK designed for **blind and low-vision Persian users**:
 
 - **System-wide Android `TextToSpeechService`:** Plugs directly into **TalkBack**, WhatsApp, Telegram, Chrome, and any Android app — 100% offline with zero internet required.
