@@ -63,7 +63,7 @@ fun AboutScreen() {
                 Text("آوا · tiny-ava", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = c.accent)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "ساخته‌شده توسط مهدی اللهیاری (OncillaAI)",
+                    "ساخته‌شده توسط مهدی اله یاری (OncillaAI)",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = c.ink,
