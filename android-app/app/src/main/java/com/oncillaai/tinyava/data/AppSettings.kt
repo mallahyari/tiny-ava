@@ -85,6 +85,22 @@ class SettingsStore(context: Context) {
         }
     }
 
+    fun updateDictEntry(oldSource: String, newSource: String, newReplacement: String, note: String) {
+        val s = newSource.trim()
+        val r = newReplacement.trim()
+        if (s.isEmpty() || r.isEmpty()) return
+        update { cur ->
+            val updated = cur.customDictionary.mapNotNull { entry ->
+                when {
+                    entry.source == oldSource -> DictEntry(s, r, note.ifBlank { entry.note.ifBlank { "دلخواه" } })
+                    entry.source.equals(s, ignoreCase = true) -> null // avoid duplicates if renamed onto existing
+                    else -> entry
+                }
+            }
+            cur.copy(customDictionary = updated)
+        }
+    }
+
     fun removeDictEntry(source: String) {
         update { cur ->
             cur.copy(customDictionary = cur.customDictionary.filterNot { it.source == source })

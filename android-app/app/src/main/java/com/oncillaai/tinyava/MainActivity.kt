@@ -474,6 +474,10 @@ private fun TinyAvaRoot(
                             app.settingsStore.addDictEntry(s, r, n)
                             app.engine.clearPhraseCache()
                         },
+                        onEdit = { oldS, newS, newR, n ->
+                            app.settingsStore.updateDictEntry(oldS, newS, newR, n)
+                            app.engine.clearPhraseCache()
+                        },
                         onDelete = { s ->
                             app.settingsStore.removeDictEntry(s)
                             app.engine.clearPhraseCache()

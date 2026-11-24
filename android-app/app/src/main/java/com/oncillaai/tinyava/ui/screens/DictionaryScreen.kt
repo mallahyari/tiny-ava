@@ -1,13 +1,13 @@
 package com.oncillaai.tinyava.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,14 +16,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,11 +49,13 @@ import com.oncillaai.tinyava.ui.theme.LocalAvaColors
 fun DictionaryScreen(
     entries: List<DictEntry>,
     onAdd: (source: String, replacement: String, note: String) -> Unit,
+    onEdit: (oldSource: String, newSource: String, newReplacement: String, note: String) -> Unit,
     onDelete: (source: String) -> Unit,
     onTestSpeak: (String) -> Unit,
 ) {
     val c = LocalAvaColors.current
-    var showDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var editingEntry by remember { mutableStateOf<DictEntry?>(null) }
 
     Column(
         modifier = Modifier
@@ -60,7 +64,7 @@ fun DictionaryScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Button(
-            onClick = { showDialog = true },
+            onClick = { showAddDialog = true },
             colors = ButtonDefaults.buttonColors(containerColor = c.accent, contentColor = c.accentInk),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
@@ -83,7 +87,8 @@ fun DictionaryScreen(
                     border = BorderStroke(1.5.dp, c.line),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 64.dp),
+                        .heightIn(min = 64.dp)
+                        .clickable { editingEntry = item },
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
@@ -104,15 +109,23 @@ fun DictionaryScreen(
                         IconButton(
                             onClick = { onTestSpeak(item.replacement) },
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(44.dp)
                                 .semantics { contentDescription = "تست تلفظ ${item.replacement}" },
                         ) {
-                            Icon(Icons.Rounded.VolumeUp, contentDescription = null, tint = c.accent)
+                            Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = null, tint = c.accent)
+                        }
+                        IconButton(
+                            onClick = { editingEntry = item },
+                            modifier = Modifier
+                                .size(44.dp)
+                                .semantics { contentDescription = "ویرایش ${item.source}" },
+                        ) {
+                            Icon(Icons.Rounded.Edit, contentDescription = null, tint = c.ink)
                         }
                         IconButton(
                             onClick = { onDelete(item.source) },
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(44.dp)
                                 .semantics { contentDescription = "حذف ${item.source}" },
                         ) {
                             Icon(Icons.Rounded.Delete, contentDescription = null, tint = c.muted)
@@ -129,7 +142,7 @@ fun DictionaryScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = "هر کلمه‌ای که اینجا اضافه کنید هم در TalkBack و هم در بخش روخوانی متن اعمال می‌شود.",
+                text = "هر کلمه‌ای که اینجا اضافه یا ویرایش کنید هم در TalkBack و هم در بخش روخوانی متن اعمال می‌شود.",
                 fontSize = 13.sp,
                 color = c.muted,
                 modifier = Modifier.padding(14.dp),
@@ -137,43 +150,102 @@ fun DictionaryScreen(
         }
     }
 
-    if (showDialog) {
-        var src by remember { mutableStateOf("") }
-        var dst by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("افزودن تلفظ دلخواه", fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedTextField(
-                        value = src,
-                        onValueChange = { src = it },
-                        label = { Text("کلمه اصلی (مثلاً تست یا Wi-Fi)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedTextField(
-                        value = dst,
-                        onValueChange = { dst = it },
-                        label = { Text("تلفظ دلخواه (مثلاً تُست یا وای‌فای)") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (src.isNotBlank() && dst.isNotBlank()) {
-                            onAdd(src, dst, "دلخواه")
-                            showDialog = false
-                        }
-                    },
-                ) { Text("ذخیره") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) { Text("انصراف") }
+    if (showAddDialog) {
+        DictEntryDialog(
+            title = "افزودن تلفظ دلخواه",
+            initialSource = "",
+            initialReplacement = "",
+            initialNote = "",
+            onTestSpeak = onTestSpeak,
+            onDismiss = { showAddDialog = false },
+            onSave = { s, r, n ->
+                onAdd(s, r, n)
+                showAddDialog = false
             },
         )
     }
+
+    editingEntry?.let { entry ->
+        DictEntryDialog(
+            title = "ویرایش تلفظ دلخواه",
+            initialSource = entry.source,
+            initialReplacement = entry.replacement,
+            initialNote = entry.note,
+            onTestSpeak = onTestSpeak,
+            onDismiss = { editingEntry = null },
+            onSave = { s, r, n ->
+                onEdit(entry.source, s, r, n)
+                editingEntry = null
+            },
+        )
+    }
+}
+
+@Composable
+private fun DictEntryDialog(
+    title: String,
+    initialSource: String,
+    initialReplacement: String,
+    initialNote: String,
+    onTestSpeak: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onSave: (source: String, replacement: String, note: String) -> Unit,
+) {
+    var src by remember(initialSource) { mutableStateOf(initialSource) }
+    var dst by remember(initialReplacement) { mutableStateOf(initialReplacement) }
+    var note by remember(initialNote) { mutableStateOf(initialNote) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = src,
+                    onValueChange = { src = it },
+                    label = { Text("کلمه اصلی (مثلاً تست یا Wi-Fi)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = dst,
+                    onValueChange = { dst = it },
+                    label = { Text("تلفظ دلخواه (مثلاً تُست یا وای‌فای)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text("توضیح کوتاه (اختیاری)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                if (dst.isNotBlank()) {
+                    OutlinedButton(
+                        onClick = { onTestSpeak(dst.trim()) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp),
+                    ) {
+                        Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("تست تلفظ قبل از ذخیره")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (src.isNotBlank() && dst.isNotBlank()) {
+                        onSave(src, dst, note)
+                    }
+                },
+            ) { Text("ذخیره") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("انصراف") }
+        },
+    )
 }
