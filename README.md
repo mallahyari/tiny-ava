@@ -3,7 +3,7 @@
 A **4.5M-parameter (~18 MB PyTorch / ~20 MB ONNX)** Persian (Farsi) text-to-speech model trained **from scratch** on ~20 hours of synthetic speech, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It runs **38×–77× faster than real time on CPU** and **100% client-side in your browser** via ONNX Runtime Web (~29 MB total including Persian G2P).
 
 - **Live in-browser demo:** https://huggingface.co/spaces/mehdi-hf/tiny-ava-demo
-- **Android App (Offline TalkBack TTS):** [Download `tiny-ava-v1.0.0-arm64.apk` (57 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v1.0.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
+- **Android App (Offline Bilingual TalkBack TTS):** [Download `tiny-ava-v1.1.0-arm64.apk` (78 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v1.1.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
 - **Hugging Face model:** https://huggingface.co/mehdi-hf/tiny-ava
 
 ![tiny-ava browser demo](assets/demo-screenshot.png)
@@ -18,12 +18,13 @@ A **4.5M-parameter (~18 MB PyTorch / ~20 MB ONNX)** Persian (Farsi) text-to-spee
 
 The [`android-app/`](android-app/) app packages `tiny-ava` (`20.4 MB`) + `persian-g2p-tiny` (`8.4 MB`) inside a native Kotlin + Jetpack Compose + ONNX Runtime Android APK designed for **blind and low-vision Persian users**:
 
-- **System-wide Android `TextToSpeechService`:** Plugs directly into **TalkBack**, WhatsApp, Telegram, Chrome, and any Android app — 100% offline with zero internet required.
-- **Accessibility-first RTL Persian UI:** Warm Light, Dark, and **WCAG AAA High-Contrast (Yellow/Black)** themes, large 56–64dp touch targets, TalkBack speed presets up to **`2.5×`**, 1-tap **Clipboard Paste & Read**, Android **Share Intent** (*«خواندن با آوا»*), Save WAV, and an editable **Custom Pronunciation Dictionary** (`Wi-Fi ← وای‌فای`, `تست ← تُست`, etc.).
+- **System-wide Dual-Language Android `TextToSpeechService` (`fa-IR` + `en-US`):** Plugs directly into **TalkBack**, WhatsApp, Telegram, X, and Chrome — 100% offline. Automatically routes Persian spans to **`tiny-ava` (Parisa)** and English spans to **`tiny-voca` English (Apache-2.0)** with clean emoji/symbol stripping.
+- **Glitch-Free High Speed up to `3.5×` (Sonic WSOLA):** Caps neural speed at `1.30×` and applies pitch-preserving Sonic WSOLA waveform time-stretching above `1.30×` — zero distortion at fast blind-user TalkBack speeds (`1.5× / 2.0× / 2.5× / 3.0× / 3.5×`).
+- **Accessibility-first RTL Persian UI:** Warm Light, Dark, and **WCAG AAA High-Contrast (Yellow/Black)** themes, large 56–64dp touch targets, 1-tap **Clipboard Paste & Read**, Android **Share Intent** (*«خواندن با آوا»*), Save WAV, and an editable **Custom Pronunciation Dictionary** (`Wi-Fi ← وای‌فای`, `تست ← تُست`, etc.).
 - **Built-in Persian TalkBack Normalizer:** Converts numbers, clock times (`۱۴:۳۰`), percentages (`۸۵٪`), and common English UI words automatically, plus a 256-phrase LRU RAM cache for `<5 ms` repeated menu buttons.
 
 ### Install on Android
-1. Download **[`tiny-ava-v1.0.0-arm64.apk`](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v1.0.0-arm64.apk)** (recommended for almost all modern phones; use `universal` only for older 32-bit devices) and tap to install.
+1. Download **[`tiny-ava-v1.1.0-arm64.apk`](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v1.1.0-arm64.apk)** (recommended for almost all modern phones; use `universal` only for older 32-bit devices) and tap to install.
 2. Open **آوا (tiny-ava)** and tap **«انتخاب آوا به عنوان موتور TalkBack»** (or go to **Settings → Accessibility → Text-to-speech output → Preferred engine → آوا**).
 3. Tap **Listen to an example** or enable **TalkBack** — works completely offline!
 
