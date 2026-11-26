@@ -16,7 +16,7 @@ enum class AppThemeMode(val labelFa: String) {
 /** Voices exposed in tiny-ava v2 (`tiny-ava-v2.onnx`). */
 enum class AvaPersianVoice(val onnxId: Long, val labelFa: String, val subtitleFa: String) {
     PARISA(0L, "پریسا (زن)", "صدای گرم فارسی"),
-    MANA(2L, "مانا (مرد)", "صدای طبیعی استودیویی"),
+    MANA(2L, "مانا (زن)", "صدای طبیعی استودیویی"),
 }
 
 data class DictEntry(

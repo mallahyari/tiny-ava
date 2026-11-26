@@ -62,7 +62,7 @@ fun VoiceSettingsScreen(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Persian Voice Selector (Parisa female vs Mana real studio human male)
+        // Persian Voice Selector (Parisa vs Mana real studio human female)
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = c.card,

@@ -98,7 +98,7 @@ fun AboutScreen() {
                 Text("مشخصات مدل و مجوز", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = c.muted)
                 Text("• نسخه برنامه: ${BuildConfig.VERSION_NAME}", fontSize = 13.5.sp, color = c.ink)
                 Text("• موتور یکپارچه دوزبانه: tiny-ava v2 (۸.۲M، ۲۴kHz) — CC BY 4.0", fontSize = 13.5.sp, color = c.ink)
-                Text("• صداها: پریسا (فارسی)، مانا (مرد استودیویی)، مایا (انگلیسی)", fontSize = 13.5.sp, color = c.ink)
+                Text("• صداها: پریسا (فارسی)، مانا (استودیویی)، مایا (انگلیسی)", fontSize = 13.5.sp, color = c.ink)
                 Text("• تبدیل خط به آوا: persian-g2p-tiny (۸.۳M) — MIT", fontSize = 13.5.sp, color = c.ink)
                 Text("• افزایش سرعت بدون افت کیفیت: Sonic WSOLA (تا ۳.۵×)", fontSize = 13.5.sp, color = c.ink)
                 Text("• کد برنامه: Apache-2.0 (مبتنی بر معماری tiny-voca)", fontSize = 13.5.sp, color = c.ink)

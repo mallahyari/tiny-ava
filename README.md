@@ -4,7 +4,7 @@
   <a href="https://buymeacoffee.com/mehdiyari"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=mehdiyari&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" height="38" alt="Buy me a coffee" /></a>
 </p>
 
-An **8.2M-parameter (`34.4 MB` ONNX)** bilingual **Persian (Farsi) + English** text-to-speech model trained **from scratch**, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It packs **3 voices in ONE model** — **Parisa** (Persian female), **Mana** (real studio human Persian male), and **Maya** (American English female) — running **34×–81× faster than real time on CPU**, 100% offline in the browser or on Android.
+An **8.2M-parameter (`34.4 MB` ONNX)** bilingual **Persian (Farsi) + English** text-to-speech model trained **from scratch**, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It packs **3 voices in ONE model** — **Parisa** (Persian female), **Mana** (real studio human Persian female), and **Maya** (American English female) — running **34×–81× faster than real time on CPU**, 100% offline in the browser or on Android.
 
 - **Live in-browser demo (3 voices, FA + EN):** https://huggingface.co/spaces/mehdi-hf/tiny-ava-demo
 - **Android App (Offline Bilingual TalkBack TTS):** [Download `tiny-ava-v2.0.0-arm64.apk` (71 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.0.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
@@ -22,7 +22,7 @@ An **8.2M-parameter (`34.4 MB` ONNX)** bilingual **Persian (Farsi) + English** t
 
 The [`android-app/`](android-app/) app bundles our unified **`tiny-ava-v2.onnx`** (`34.4 MB`, 3 voices) + polished **`persian-g2p-tiny`** (`8.4 MB` int8, `27/27` `ژ`, `86.4%` diacritics) + English lexicon (`3.3 MB`) inside a native Kotlin + Jetpack Compose + ONNX Runtime APK designed for **blind and low-vision Persian users**:
 
-- **3 Voices in ONE Unified Model:** Choose between **پریسا (Parisa, female)** and **مانا (Mana, real studio human male)** for Persian, while English spans speak automatically with **مایا (Maya, American English)** — 7 MB smaller than v1.1!
+- **3 Voices in ONE Unified Model:** Choose between **پریسا (Parisa, warm female)** and **مانا (Mana, real studio human female)** for Persian, while English spans speak automatically with **مایا (Maya, American English)** — 7 MB smaller than v1.1!
 - **System-wide Dual-Language Android `TextToSpeechService` (`fa-IR` + `en-US`):** Plugs directly into **TalkBack**, WhatsApp, Telegram, X, and Chrome — 100% offline with clean emoji/symbol stripping.
 - **Glitch-Free High Speed up to `3.5×` (Sonic WSOLA):** Caps neural speed at `1.30×` and applies pitch-preserving Sonic WSOLA waveform time-stretching for `1.30× → 3.5×` (`1.0× / 1.5× / 2.0× / 2.5× / 3.0×` TalkBack presets).
 - **Accessibility-first RTL Persian UI:** Warm Light, Dark, and **WCAG AAA High-Contrast (Yellow/Black)** themes, large 56–64dp touch targets, 1-tap **Clipboard Paste & Read**, Android **Share Intent** (*«خواندن با آوا»*), Save WAV, and an editable **Custom Pronunciation Dictionary** (`Wi-Fi ← وای‌فای`, `تست ← تُست`, etc.).
