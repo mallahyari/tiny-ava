@@ -7,6 +7,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import com.oncillaai.tinyava.TinyAvaApp
+import com.oncillaai.tinyava.engine.LanguageSpanSplitter
 import com.oncillaai.tinyava.engine.PersianTextNormalizer
 import com.oncillaai.tinyava.engine.TinyAvaEngine
 import java.util.Locale
@@ -14,43 +15,37 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.ln
 
 /**
- * Native Android System TTS Service for TalkBack and all third-party apps.
- * Runs 100% offline using bundled ONNX Runtime models (persian-g2p-tiny + tiny-ava Parisa).
+ * Native Android System TTS Service for TalkBack and all apps — dual-language (fa-IR + en-US),
+ * 100% offline, with glitch-free high-speed Sonic WSOLA up to 3.5x.
  */
 class TinyAvaTtsService : TextToSpeechService() {
 
     private val stopped = AtomicBoolean(false)
     private lateinit var engine: TinyAvaEngine
-    private val persianLocale = Locale("fa", "IR")
+    private val persianLocale = Locale.Builder().setLanguage("fa").setRegion("IR").build()
+    private val englishLocale = Locale.US
+
     private val parisaVoice by lazy {
-        Voice(
-            "fa-IR-parisa-local",
-            persianLocale,
-            Voice.QUALITY_VERY_HIGH,
-            Voice.LATENCY_VERY_LOW,
-            false,
-            emptySet(),
-        )
+        Voice("fa-IR-parisa-local", persianLocale, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_VERY_LOW, false, emptySet())
+    }
+    private val englishVoice by lazy {
+        Voice("en-US-ava-local", englishLocale, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_VERY_LOW, false, emptySet())
     }
 
     override fun onCreate() {
         super.onCreate()
         engine = (application as TinyAvaApp).engine
-        // Warm up ONNX sessions in background so first TalkBack utterance has minimal latency
         Thread { runCatching { engine.ensureLoaded() } }.start()
     }
 
     override fun onIsLanguageAvailable(lang: String?, country: String?, variant: String?): Int {
         val l = lang?.lowercase(Locale.ROOT) ?: return TextToSpeech.LANG_NOT_SUPPORTED
-        if (l == "fas" || l == "fa" || l == "per") {
-            val c = country?.uppercase(Locale.ROOT) ?: ""
-            return if (c == "IRN" || c == "IR") {
-                TextToSpeech.LANG_COUNTRY_AVAILABLE
-            } else {
-                TextToSpeech.LANG_AVAILABLE
-            }
+        val c = country?.uppercase(Locale.ROOT) ?: ""
+        return when (l) {
+            "fas", "fa", "per" -> if (c == "IRN" || c == "IR") TextToSpeech.LANG_COUNTRY_AVAILABLE else TextToSpeech.LANG_AVAILABLE
+            "eng", "en" -> if (c == "USA" || c == "US") TextToSpeech.LANG_COUNTRY_AVAILABLE else TextToSpeech.LANG_AVAILABLE
+            else -> TextToSpeech.LANG_NOT_SUPPORTED
         }
-        return TextToSpeech.LANG_NOT_SUPPORTED
     }
 
     override fun onGetLanguage(): Array<String> = arrayOf("fas", "IRN", "")
@@ -63,22 +58,27 @@ class TinyAvaTtsService : TextToSpeechService() {
         return avail
     }
 
-    override fun onGetVoices(): MutableList<Voice> = mutableListOf(parisaVoice)
+    override fun onGetVoices(): MutableList<Voice> = mutableListOf(parisaVoice, englishVoice)
 
     override fun onGetDefaultVoiceNameFor(lang: String?, country: String?, variant: String?): String? {
-        return if (onIsLanguageAvailable(lang, country, variant) >= TextToSpeech.LANG_AVAILABLE) {
-            parisaVoice.name
-        } else {
-            null
+        val l = lang?.lowercase(Locale.ROOT) ?: return null
+        return when (l) {
+            "fas", "fa", "per" -> parisaVoice.name
+            "eng", "en" -> englishVoice.name
+            else -> null
         }
     }
 
     override fun onIsValidVoiceName(voiceName: String?): Int {
-        return if (voiceName == parisaVoice.name) TextToSpeech.SUCCESS else TextToSpeech.ERROR
+        return if (voiceName == parisaVoice.name || voiceName == englishVoice.name) {
+            TextToSpeech.SUCCESS
+        } else {
+            TextToSpeech.ERROR
+        }
     }
 
     override fun onLoadVoice(voiceName: String?): Int {
-        if (voiceName != parisaVoice.name) return TextToSpeech.ERROR
+        if (onIsValidVoiceName(voiceName) != TextToSpeech.SUCCESS) return TextToSpeech.ERROR
         runCatching { engine.ensureLoaded() }
         return TextToSpeech.SUCCESS
     }
@@ -99,13 +99,18 @@ class TinyAvaTtsService : TextToSpeechService() {
         }
 
         val settings = (application as TinyAvaApp).settingsStore.state.value
-        // Android speechRate: 100 = 1.0x; multiply by user's preferred speed setting
-        val sysRate = (request.speechRate.coerceIn(50, 300) / 100f)
-        val effectiveSpeed = (settings.speed * sysRate).coerceIn(0.65f, 2.6f)
-        // Android pitch: 100 = 1.0x; convert ratio to semitones and add user pitch offset
+        val sysRate = (request.speechRate.coerceIn(50, 350) / 100f)
+        val effectiveSpeed = (settings.speed * sysRate).coerceIn(0.65f, 3.5f)
         val sysPitchRatio = (request.pitch.coerceIn(50, 200) / 100f)
         val sysPitchSt = (12.0 * ln(sysPitchRatio.toDouble()) / ln(2.0)).toFloat()
         val effectivePitchSt = (settings.pitchSemitones + sysPitchSt).coerceIn(-6f, 6f)
+
+        val reqLang = request.language?.lowercase(Locale.ROOT).orEmpty()
+        val defaultLang = if (reqLang == "eng" || reqLang == "en") {
+            LanguageSpanSplitter.Lang.EN
+        } else {
+            LanguageSpanSplitter.Lang.FA
+        }
 
         callback.start(TinyAvaEngine.SAMPLE_RATE, AudioFormat.ENCODING_PCM_16BIT, 1)
         val maxChunk = callback.maxBufferSize.coerceAtLeast(4096)
@@ -122,6 +127,7 @@ class TinyAvaTtsService : TextToSpeechService() {
                     settings = settings,
                     speedOverride = effectiveSpeed,
                     pitchSemitonesOverride = effectivePitchSt,
+                    defaultLang = defaultLang,
                     isCancelled = { stopped.get() },
                 )
                 if (stopped.get()) {

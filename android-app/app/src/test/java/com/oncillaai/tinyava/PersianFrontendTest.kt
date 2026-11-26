@@ -61,4 +61,28 @@ class PersianFrontendTest {
         assertEquals(seq.symbols.size, seq.tokenIds.size)
         assertEquals(seq.symbols.size, seq.stressIds.size)
     }
+
+    @Test
+    fun testBilingualSpanSplitterAndEmojiCleanup() {
+        val raw = "👑 Captain Phoenix 👑 یارو پسره با ۲۰۶ چسبیده بود 😍"
+        val spans = com.oncillaai.tinyava.engine.LanguageSpanSplitter.split(raw)
+        assertEquals(2, spans.size)
+        assertEquals(com.oncillaai.tinyava.engine.LanguageSpanSplitter.Lang.EN, spans[0].lang)
+        assertEquals("Captain Phoenix", spans[0].text)
+        assertEquals(com.oncillaai.tinyava.engine.LanguageSpanSplitter.Lang.FA, spans[1].lang)
+        assertTrue(spans[1].text.contains("۲۰۶"))
+    }
+
+    @Test
+    fun testSonicTimeStretchHighSpeed() {
+        // 1 second of 200 Hz sine wave at 24 kHz
+        val sr = 24000
+        val wave = FloatArray(sr) { i -> kotlin.math.sin(2.0 * Math.PI * 200.0 * i / sr).toFloat() * 0.5f }
+        val fast2x = com.oncillaai.tinyava.engine.SonicTimeStretch.changeSpeed(wave, sr, 2.0f)
+        val fast3x = com.oncillaai.tinyava.engine.SonicTimeStretch.changeSpeed(wave, sr, 2.5f)
+        assertTrue("2x should shrink near half: ${fast2x.size}", fast2x.size in (sr * 0.40).toInt()..(sr * 0.62).toInt())
+        assertTrue("2.5x should shrink further: ${fast3x.size}", fast3x.size < fast2x.size)
+        assertTrue(fast2x.all { it.isFinite() })
+        assertTrue(fast3x.all { it.isFinite() })
+    }
 }

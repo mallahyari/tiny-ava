@@ -97,8 +97,10 @@ fun AboutScreen() {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("مشخصات مدل و مجوز", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = c.muted)
                 Text("• نسخه برنامه: ${BuildConfig.VERSION_NAME}", fontSize = 13.5.sp, color = c.ink)
-                Text("• موتور صدا: tiny-ava (پریسا، ۴.۵M، ۲۴kHz) — CC BY 4.0", fontSize = 13.5.sp, color = c.ink)
+                Text("• موتور فارسی: tiny-ava (پریسا، ۴.۵M، ۲۴kHz) — CC BY 4.0", fontSize = 13.5.sp, color = c.ink)
+                Text("• موتور انگلیسی: tiny-voca (۴.۵M، ۲۴kHz) — Apache-2.0", fontSize = 13.5.sp, color = c.ink)
                 Text("• تبدیل خط به آوا: persian-g2p-tiny (۸.۳M) — MIT", fontSize = 13.5.sp, color = c.ink)
+                Text("• افزایش سرعت بدون افت کیفیت: Sonic WSOLA (تا ۳.۵×)", fontSize = 13.5.sp, color = c.ink)
                 Text("• کد برنامه: Apache-2.0 (مبتنی بر معماری tiny-voca)", fontSize = 13.5.sp, color = c.ink)
                 Text("• حریم خصوصی: ۱۰۰٪ آفلاین، بدون جمع‌آوری هیچ‌گونه داده", fontSize = 13.5.sp, color = c.ink)
             }

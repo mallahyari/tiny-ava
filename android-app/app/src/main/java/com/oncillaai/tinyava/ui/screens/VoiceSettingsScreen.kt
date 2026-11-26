@@ -3,6 +3,7 @@ package com.oncillaai.tinyava.ui.screens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,7 +51,7 @@ fun VoiceSettingsScreen(
     onPlaySample: () -> Unit,
 ) {
     val c = LocalAvaColors.current
-    val presets = listOf(1.0f, 1.5f, 2.0f, 2.5f)
+    val presets = listOf(1.0f, 1.5f, 2.0f, 2.5f, 3.0f)
 
     Column(
         modifier = Modifier
@@ -78,7 +79,7 @@ fun VoiceSettingsScreen(
                 Slider(
                     value = settings.speed,
                     onValueChange = onSpeedChange,
-                    valueRange = 0.7f..2.5f,
+                    valueRange = 0.7f..3.5f,
                     colors = SliderDefaults.colors(thumbColor = c.accent, activeTrackColor = c.accent),
                 )
                 Row(
@@ -90,6 +91,7 @@ fun VoiceSettingsScreen(
                         Button(
                             onClick = { onSpeedChange(p) },
                             shape = RoundedCornerShape(12.dp),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (selected) c.ink else c.soft,
                                 contentColor = if (selected) c.card else c.ink,
@@ -98,7 +100,7 @@ fun VoiceSettingsScreen(
                                 .weight(1f)
                                 .heightIn(min = 48.dp),
                         ) {
-                            Text("${"%.1f".format(p)}×", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text("${"%.1f".format(p)}×", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -187,9 +189,9 @@ fun VoiceSettingsScreen(
                 )
                 HorizontalDivider(color = c.line)
                 AccessibleToggleRow(
-                    title = "تلفظ کلمات انگلیسی رایج",
-                    subtitle = "Wi-Fi، WhatsApp، Bluetooth و…",
-                    checked = settings.convertEnglishUi,
+                    title = "خواندن بومی متن انگلیسی (دوزبانه)",
+                    subtitle = "تلفظ روان جملات و نام‌های انگلیسی با موتور انگلیسی آفلاین",
+                    checked = settings.enableEnglishVoice,
                     onCheckedChange = onToggleEnglish,
                 )
                 HorizontalDivider(color = c.line)

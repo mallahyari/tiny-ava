@@ -12,7 +12,7 @@ class CheckVoiceDataActivity : Activity() {
         val result = Intent().apply {
             putStringArrayListExtra(
                 TextToSpeech.Engine.EXTRA_AVAILABLE_VOICES,
-                arrayListOf("fas-IRN", "fa-IR"),
+                arrayListOf("fas-IRN", "fa-IR", "eng-USA", "en-US"),
             )
             putStringArrayListExtra(
                 TextToSpeech.Engine.EXTRA_UNAVAILABLE_VOICES,

@@ -458,13 +458,16 @@ private fun TinyAvaRoot(
                         onPitchChange = { v -> app.settingsStore.update { it.copy(pitchSemitones = v) } },
                         onThemeChange = { m -> app.settingsStore.update { it.copy(themeMode = m) } },
                         onToggleNumbers = { b -> app.settingsStore.update { it.copy(convertNumbers = b) } },
-                        onToggleEnglish = { b -> app.settingsStore.update { it.copy(convertEnglishUi = b) } },
+                        onToggleEnglish = { b ->
+                            app.settingsStore.update { it.copy(enableEnglishVoice = b) }
+                            app.engine.clearPhraseCache()
+                        },
                         onToggleCache = { b ->
                             app.settingsStore.update { it.copy(enablePhraseCache = b) }
                             if (!b) app.engine.clearPhraseCache()
                         },
                         onPlaySample = {
-                            speakSingle("سلام، ساعت چهارده و سی دقیقه است و باتری گوشی هشتاد و پنج درصد شارژ دارد.")
+                            speakSingle("سلام، موبایل من ۸۵ درصد شارژ داره. Welcome to tiny-ava, your fast offline voice.")
                         },
                     )
 

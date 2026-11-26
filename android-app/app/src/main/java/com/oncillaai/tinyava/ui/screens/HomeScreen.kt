@@ -95,7 +95,7 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "صدای پریسا · ۲۴ کیلوهرتز · ۴.۵ میلیون پارامتر",
+                        text = "فارسی (پریسا) + انگلیسی · ۲۴ کیلوهرتز · آفلاین",
                         color = c.okInk.copy(alpha = 0.9f),
                         fontSize = 13.sp,
                     )

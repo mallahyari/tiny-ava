@@ -24,6 +24,7 @@ data class SettingsState(
     val pitchSemitones: Float = 0.0f,
     val pitchRange: Float = 1.05f,
     val convertNumbers: Boolean = true,
+    val enableEnglishVoice: Boolean = true,
     val convertEnglishUi: Boolean = true,
     val enablePhraseCache: Boolean = true,
     val themeMode: AppThemeMode = AppThemeMode.LIGHT,
@@ -49,10 +50,11 @@ class SettingsStore(context: Context) {
         val dictJson = prefs.getString("custom_dict", null)
         val dict = if (dictJson != null) parseDict(dictJson) else DEFAULT_CUSTOM_DICT
         return SettingsState(
-            speed = prefs.getFloat("speed", 1.2f).coerceIn(0.7f, 2.5f),
+            speed = prefs.getFloat("speed", 1.2f).coerceIn(0.7f, 3.5f),
             pitchSemitones = prefs.getFloat("pitch_st", 0.0f).coerceIn(-4.0f, 4.0f),
             pitchRange = prefs.getFloat("pitch_range", 1.05f).coerceIn(0.7f, 1.4f),
             convertNumbers = prefs.getBoolean("convert_numbers", true),
+            enableEnglishVoice = prefs.getBoolean("enable_english_voice", true),
             convertEnglishUi = prefs.getBoolean("convert_english_ui", true),
             enablePhraseCache = prefs.getBoolean("enable_phrase_cache", true),
             themeMode = theme,
@@ -68,6 +70,7 @@ class SettingsStore(context: Context) {
             .putFloat("pitch_st", next.pitchSemitones)
             .putFloat("pitch_range", next.pitchRange)
             .putBoolean("convert_numbers", next.convertNumbers)
+            .putBoolean("enable_english_voice", next.enableEnglishVoice)
             .putBoolean("convert_english_ui", next.convertEnglishUi)
             .putBoolean("enable_phrase_cache", next.enablePhraseCache)
             .putString("theme_mode", next.themeMode.name)
