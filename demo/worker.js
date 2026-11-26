@@ -150,7 +150,16 @@ function normalizeText(text) {
 function splitSentences(text) {
   const cleaned = text.replace(/[\s\ufeff]+/g, " ").trim();
   if (!cleaned) return [];
-  return cleaned.split(/(?<=[.!؟?…]["')\]»]?)\s+/).map(s => s.trim()).filter(s => /[\p{L}\p{N}]/u.test(s));
+  const raw = cleaned.split(/(?<=[.!؟?…]["')\]»]?)\s+/).map(s => s.trim()).filter(s => /[\p{L}\p{N}]/u.test(s));
+  // Split long sentences (> 95 chars) at commas/semicolons so first audio streams in ~120ms!
+  const out = [];
+  for (const s of raw) {
+    if (s.length <= 95) { out.push(s); continue; }
+    const clauses = s.split(/(?<=[،,؛;:—])\s+/).map(c => c.trim()).filter(c => /[\p{L}\p{N}]/u.test(c));
+    if (clauses.length > 1) out.push(...clauses);
+    else out.push(s);
+  }
+  return out;
 }
 
 function ensureMark(text) {
@@ -383,12 +392,12 @@ self.onmessage = async (ev) => {
       if (!sents.length) { postMessage({ type: "error", id, message: "Please enter text." }); return; }
 
       const tStart = performance.now();
-      let g2pMs = 0, ttsMs = 0;
+      let g2pMs = 0, ttsMs = 0, firstAudioMs = null;
       const waves = [], allPhones = [];
 
       for (let i = 0; i < sents.length; i++) {
         if (cancelledId === id) return;
-        sendStatus(`Synthesizing sentence ${i + 1} / ${sents.length} (${voice})...`);
+        sendStatus(`Streaming chunk ${i + 1} / ${sents.length}...`);
         const t0 = performance.now();
         const ph = await phonemizeSentence(sents[i]);
         g2pMs += performance.now() - t0;
@@ -405,11 +414,33 @@ self.onmessage = async (ev) => {
           pitch_range: new ort.Tensor("float32", Float32Array.from([pitchRange]), [1]),
         });
         ttsMs += performance.now() - t1;
-        waves.push(limitPeak(out.audio.data));
+        const cleanWave = limitPeak(out.audio.data);
+        waves.push(cleanWave);
         allPhones.push(ph.syms.join(" "));
+
+        if (firstAudioMs === null) firstAudioMs = performance.now() - tStart;
+        // Stream chunk immediately to main thread for instant Web Audio playback!
+        const chunkCopy = new Float32Array(cleanWave);
+        postMessage(
+          {
+            type: "chunk",
+            id,
+            index: i,
+            total: sents.length,
+            audio: chunkCopy,
+            sampleRate: SAMPLE_RATE,
+            ttfbSec: firstAudioMs / 1000,
+          },
+          [chunkCopy.buffer]
+        );
       }
 
-      const gap = Math.round(SAMPLE_RATE * 0.12);
+      if (!waves.length) {
+        postMessage({ type: "error", id, message: "Nothing pronounceable found in text." });
+        return;
+      }
+
+      const gap = Math.round(SAMPLE_RATE * 0.10);
       let totalLen = 0;
       waves.forEach((w, idx) => { totalLen += w.length + (idx < waves.length - 1 ? gap : 0); });
       const full = new Float32Array(totalLen);
@@ -419,7 +450,15 @@ self.onmessage = async (ev) => {
 
       postMessage({
         type: "done", id, audio: full, sampleRate: SAMPLE_RATE,
-        stats: { audioSec: totalLen / SAMPLE_RATE, totalSec: totalMs / 1000, g2pSec: g2pMs / 1000, ttsSec: ttsMs / 1000, sentences: waves.length, voice },
+        stats: {
+          audioSec: totalLen / SAMPLE_RATE,
+          totalSec: totalMs / 1000,
+          ttfbSec: (firstAudioMs || totalMs) / 1000,
+          g2pSec: g2pMs / 1000,
+          ttsSec: ttsMs / 1000,
+          sentences: waves.length,
+          voice,
+        },
         phones: allPhones.join("\n"),
       }, [full.buffer]);
     }

@@ -106,6 +106,9 @@
     <div class="actions">
       <button class="main" id="go" type="button">Speak</button>
       <button class="sec" id="stop" type="button" hidden>Stop</button>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;" title="Play each sentence/clause the moment it finishes (~120 ms TTFB)">
+        <input type="checkbox" id="stream" checked> Stream while generating
+      </label>
       <span id="status" role="status"></span>
     </div>
     <progress id="load" max="1" value="0" hidden></progress>
@@ -172,6 +175,31 @@ const SAMPLES = [
 
 const $ = id => document.getElementById(id);
 let selectedVoice = "parisa", ready = false, activeId = 0, wavUrl = null, curAudio = null;
+let audioCtx = null, nextPlayTime = 0, activeSources = [], streamedThisRun = false;
+
+function stopWebAudio() {
+  for (const s of activeSources) { try { s.stop(); } catch (_) {} }
+  activeSources = [];
+  nextPlayTime = 0;
+}
+
+function enqueueStreamChunk(samples, sampleRate) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  const buf = audioCtx.createBuffer(1, samples.length, sampleRate);
+  buf.getChannelData(0).set(samples);
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(audioCtx.destination);
+  const now = audioCtx.currentTime;
+  const startAt = Math.max(now + 0.01, nextPlayTime);
+  src.start(startAt);
+  nextPlayTime = startAt + buf.duration + 0.10;
+  activeSources.push(src);
+  src.onended = () => {
+    activeSources = activeSources.filter(x => x !== src);
+  };
+}
 
 document.querySelectorAll(".vbtn").forEach(b => {
   b.onclick = () => {
@@ -264,6 +292,12 @@ worker.onmessage = (ev) => {
     updateModelBox("ready"); $("status").textContent = "Ready.";
   } else if (m.type === "cache_cleared") {
     ready = false; updateModelBox("not_cached"); $("status").textContent = "Models removed from browser cache.";
+  } else if (m.type === "chunk" && m.id === activeId) {
+    if ($("stream").checked) {
+      streamedThisRun = true;
+      enqueueStreamChunk(m.audio, m.sampleRate);
+      $("status").textContent = `Streaming chunk ${m.index + 1}/${m.total} (first audio in ${(m.ttfbSec * 1000).toFixed(0)} ms)...`;
+    }
   } else if (m.type === "done" && m.id === activeId) {
     $("go").disabled = false; $("stop").hidden = true; $("load").hidden = true;
     curAudio = m.audio;
@@ -276,14 +310,14 @@ worker.onmessage = (ev) => {
     $("dl").download = `tiny-ava-v2-${vName.toLowerCase()}.wav`;
     $("out").hidden = false; drawWave(curAudio, 0);
     $("stats").innerHTML = `
-      <div class="stat"><span class="l">Voice</span><b>${vName}</b><span class="c">24 kHz mono</span></div>
-      <div class="stat"><span class="l">Audio</span><b>${st.audioSec.toFixed(2)}s</b><span class="c">${st.sentences} sentence(s)</span></div>
+      <div class="stat"><span class="l">First Audio</span><b>${(st.ttfbSec * 1000).toFixed(0)} ms</b><span class="c">${vName} · ${st.sentences} chunk(s)</span></div>
+      <div class="stat"><span class="l">Audio</span><b>${st.audioSec.toFixed(2)}s</b><span class="c">24 kHz mono</span></div>
       <div class="stat"><span class="l">Total Time</span><b>${st.totalSec.toFixed(2)}s</b><span class="c">G2P ${st.g2pSec.toFixed(2)}s + TTS ${st.ttsSec.toFixed(2)}s</span></div>
       <div class="stat"><span class="l">TTS Speed</span><b>${(st.audioSec / Math.max(st.ttsSec, 1e-4)).toFixed(1)}×</b><span class="c">End-to-end ${(st.audioSec / Math.max(st.totalSec, 1e-4)).toFixed(1)}× RT</span></div>
     `;
     $("phones").textContent = m.phones; $("phonesBox").hidden = false;
-    $("status").textContent = `Done in ${st.totalSec.toFixed(2)}s.`;
-    $("player").play().catch(() => {});
+    $("status").textContent = `Done in ${st.totalSec.toFixed(2)}s (first audio in ${(st.ttfbSec * 1000).toFixed(0)} ms).`;
+    if (!streamedThisRun) $("player").play().catch(() => {});
   } else if (m.type === "error") {
     $("go").disabled = false; $("stop").hidden = true; $("load").hidden = true;
     $("status").textContent = m.message; $("status").className = "err";
@@ -294,6 +328,14 @@ $("dlmodel").onclick = () => { updateModelBox("downloading"); $("go").disabled =
 $("rmmodel").onclick = (e) => { e.preventDefault(); worker.postMessage({ type: "clear_cache" }); };
 $("go").onclick = () => {
   const txt = $("text").value.trim(); if (!txt) return;
+  stopWebAudio();
+  $("player").pause();
+  streamedThisRun = false;
+  if ($("stream").checked) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 24000 });
+    if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+    nextPlayTime = audioCtx.currentTime;
+  }
   activeId++; $("go").disabled = true; $("stop").hidden = false;
   if (!ready) updateModelBox("downloading");
   worker.postMessage({
@@ -301,7 +343,7 @@ $("go").onclick = () => {
     speed: Number($("speed").value), pitchShift: Number($("pitch").value) * 0.058, pitchRange: Number($("range").value),
   });
 };
-$("stop").onclick = () => { worker.postMessage({ type: "cancel", id: activeId }); activeId++; $("player").pause(); $("go").disabled = false; $("stop").hidden = true; $("status").textContent = "Stopped."; };
+$("stop").onclick = () => { worker.postMessage({ type: "cancel", id: activeId }); activeId++; stopWebAudio(); $("player").pause(); $("go").disabled = false; $("stop").hidden = true; $("status").textContent = "Stopped."; };
 
 worker.postMessage({ type: "check_cache" });
 </script>
