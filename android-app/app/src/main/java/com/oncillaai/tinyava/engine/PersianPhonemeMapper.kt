@@ -29,7 +29,7 @@ object PersianPhonemeMapper {
     val REPR1_TO_IPA: Map<Char, String> = mapOf(
         'a' to "a", 'A' to "ɑ", 'e' to "e", 'o' to "o", 'i' to "i", 'u' to "u",
         'p' to "p", 'b' to "b", 't' to "t", 'd' to "d", 'k' to "k", 'g' to "ɡ", 'q' to "q", '?' to "ʔ",
-        'f' to "f", 'v' to "v", 's' to "s", 'z' to "z", 'S' to "ʃ", 'Z' to "ʒ", 'x' to "x", 'h' to "h",
+        'f' to "f", 'v' to "v", 's' to "s", 'z' to "z", 'S' to "ʃ", 'Z' to "ʒ", ';' to "ʒ", 'x' to "x", 'h' to "h",
         'C' to "tʃ", 'j' to "dʒ", 'm' to "m", 'n' to "n", 'l' to "l", 'r' to "r", 'y' to "j",
     )
 
@@ -93,9 +93,16 @@ object PersianPhonemeMapper {
                 stem = stem.substring(1)
             }
             val phones = mutableListOf<Pair<String, Int>>()
-            for (ch in stem) {
-                val ipa = REPR1_TO_IPA[ch]
+            var i = 0
+            while (i < stem.length) {
+                if (i + 1 < stem.length && stem[i] == 'z' && stem[i + 1] == 'h') {
+                    phones.add("ʒ" to 0)
+                    i += 2
+                    continue
+                }
+                val ipa = REPR1_TO_IPA[stem[i]]
                 if (ipa != null) phones.add(ipa to 0)
+                i++
             }
             // Persian primary word-final lexical stress on last vowel of stem
             for (i in phones.lastIndex downTo 0) {

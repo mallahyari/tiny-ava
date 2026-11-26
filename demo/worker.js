@@ -4,7 +4,7 @@
 const ORT_CDN = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
 importScripts(ORT_CDN + "ort.wasm.min.js");
 
-const CACHE_NAME = "tiny-ava-v1";
+const CACHE_NAME = "tiny-ava-v2";
 const SAMPLE_RATE = 24000;
 const PEAK = 0.99;
 
@@ -23,7 +23,7 @@ const PHONE_SET = new Set(SYMBOLS.slice(17));
 const REPR1_TO_IPA = {
   a: "a", A: "ɑ", e: "e", o: "o", i: "i", u: "u",
   p: "p", b: "b", t: "t", d: "d", k: "k", g: "ɡ", q: "q", "?": "ʔ",
-  f: "f", v: "v", s: "s", z: "z", S: "ʃ", Z: "ʒ", x: "x", h: "h",
+  f: "f", v: "v", s: "s", z: "z", S: "ʃ", Z: "ʒ", ";": "ʒ", x: "x", h: "h",
   C: "tʃ", j: "dʒ", m: "m", n: "n", l: "l", r: "r", y: "j",
 };
 
@@ -233,8 +233,13 @@ function repr1ToWords(repr1) {
     }
 
     const phones = [];
-    for (const ch of stem) {
-      const ipa = REPR1_TO_IPA[ch];
+    for (let i = 0; i < stem.length; i++) {
+      if (i + 1 < stem.length && stem[i] === "z" && stem[i + 1] === "h") {
+        phones.push(["ʒ", 0]);
+        i++;
+        continue;
+      }
+      const ipa = REPR1_TO_IPA[stem[i]];
       if (ipa) phones.push([ipa, 0]);
     }
     // Primary lexical stress on last vowel of stem

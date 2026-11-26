@@ -2,61 +2,73 @@
   {
     "name": "01_greeting",
     "text": "سلام، حال شما چطور است؟ امروز هوای تهران آفتابی است.",
-    "duration_sec": 4.71,
+    "duration_sec": 4.73,
     "phones": "<bos> s a l ɑ m ، h ɑ l e <sp> ʃ o m ɑ <sp> tʃ e t o r <sp> a s t ؟ <eos> <bos> e m r u z <sp> h a v ɑ j e <sp> t e h r ɑ n <sp> ɑ f t ɑ b i <sp> a s t . <eos>"
   },
   {
     "name": "02_ezafe_chain",
     "text": "نشست سران سیاسی کشورهای عضو به خوبی پیش رفت.",
-    "duration_sec": 4.04,
+    "duration_sec": 4.11,
     "phones": "<bos> n e ʃ a s t e <sp> s a r ɑ n e <sp> s i j ɑ s i j e <sp> k e ʃ v a r h ɑ j e <sp> o z v <sp> b e <sp> x u b i <sp> p i ʃ <sp> r a f t . <eos>"
   },
   {
     "name": "03_ezafe_kasra",
     "text": "بارانِ ریزی روی آسفالتِ خیسِ خیابان می‌بارد.",
-    "duration_sec": 3.62,
+    "duration_sec": 3.63,
     "phones": "<bos> b ɑ r ɑ n e <sp> r i z i <sp> r u j e <sp> ɑ s f ɑ l t e <sp> x i s e <sp> x i j ɑ b ɑ n <sp> m i b ɑ r a d . <eos>"
   },
   {
     "name": "04_homo_tost",
     "text": "من هر روز صبح نان تست داغ با کره و عسل می‌خورم.",
-    "duration_sec": 3.88,
+    "duration_sec": 3.89,
     "phones": "<bos> m a n <sp> h a r <sp> r u z <sp> s o b h <sp> n ɑ n e <sp> t o s t e <sp> d ɑ q <sp> b ɑ <sp> k a r e <sp> v a <sp> a s a l <sp> m i x o r a m . <eos>"
   },
   {
     "name": "05_homo_gol",
     "text": "گل قرمز زیبایی را روی میز گذاشت و لبخند زد.",
-    "duration_sec": 3.79,
+    "duration_sec": 3.74,
     "phones": "<bos> ɡ o l e <sp> q e r m e z e <sp> z i b ɑ j i <sp> r ɑ <sp> r u j e <sp> m i z <sp> ɡ o z ɑ ʃ t <sp> v a <sp> l a b x a n d <sp> z a d . <eos>"
   },
   {
     "name": "06_homo_gel",
     "text": "کفش‌هایم بعد از باران پر از گِل و لای شد.",
-    "duration_sec": 3.09,
+    "duration_sec": 3.02,
     "phones": "<bos> k a f ʃ ɑ j a m <sp> b a ʔ d <sp> a z <sp> b ɑ r ɑ n <sp> p o r <sp> a z <sp> ɡ e l <sp> o <sp> l ɑ j <sp> ʃ o d . <eos>"
   },
   {
     "name": "07_homo_mord",
     "text": "حیوان خانگی من دیروز در اثر گرمای شدید بیهوش شد و مرد.",
-    "duration_sec": 4.64,
+    "duration_sec": 4.61,
     "phones": "<bos> h e j v ɑ n e <sp> x ɑ n e ɡ i j e <sp> m a n <sp> d i r u z <sp> d a r <sp> a s a r e <sp> ɡ a r m ɑ j e <sp> ʃ a d i d <sp> b i h u ʃ <sp> ʃ o d <sp> v a <sp> m o r d . <eos>"
   },
   {
     "name": "08_question",
     "text": "آیا واقعاً فکر کردی که تولد تو را فراموش می‌کنم؟",
-    "duration_sec": 4.16,
+    "duration_sec": 4.1,
     "phones": "<bos> ɑ j ɑ <sp> v ɑ q e ʔ a n <sp> f e k r <sp> k a r d i <sp> k e <sp> t a v a l l o d e <sp> t o <sp> r ɑ <sp> f a r ɑ m u ʃ <sp> m i k o n a m ؟ <eos>"
   },
   {
     "name": "09_uvulars",
     "text": "قصر قدیم در کنار غار خاموش و عمیق کوهستان قرار دارد.",
-    "duration_sec": 4.74,
+    "duration_sec": 4.64,
     "phones": "<bos> q a s r e <sp> q a d i m <sp> d a r <sp> k e n ɑ r e j e <sp> q ɑ r e <sp> x ɑ m u ʃ <sp> v a <sp> a m i q e <sp> k u h e s t ɑ n <sp> q a r ɑ r <sp> d ɑ r a d . <eos>"
   },
   {
     "name": "10_long",
     "text": "توسعه مدل‌های کوچک هوش مصنوعی باعث می‌شود که فناوری تبدیل متن به گفتار بدون نیاز به سرور و اینترنت روی دستگاه‌های معمولی اجرا شود.",
-    "duration_sec": 10.37,
+    "duration_sec": 10.33,
     "phones": "<bos> t o s e j e ʔ e j e <sp> m o d e l h ɑ j e <sp> k u tʃ a k e <sp> h u ʃ e <sp> m a s n u ʔ i <sp> b ɑ ʔ e s <sp> m i ʃ a v a d <sp> k e <sp> f a n a v a r i j e <sp> t a b d i l e <sp> m a t n <sp> b e <sp> ɡ o f t ɑ r e <sp> b e d u n e j e <sp> n i j ɑ z <sp> b e <sp> s e r v e r <sp> v a <sp> i n t e r n e t <sp> r u j e <sp> d a s t ɡ ɑ h h ɑ j e <sp> m a ʔ m u l i <sp> e dʒ r ɑ <sp> ʃ a v a d . <eos>"
+  },
+  {
+    "name": "11_zh_charge",
+    "text": "موبایل من شارژ نداره و باید سریع به شارژر وصلش کنم.",
+    "duration_sec": 4.45,
+    "phones": "<bos> m u b ɑ j e l e <sp> m a n <sp> ʃ ɑ r ʒ <sp> n a d ɑ r e <sp> v a <sp> b ɑ j a d <sp> s a r i ʔ <sp> b e <sp> ʃ ɑ r ʒ e r <sp> v a s l a ʃ <sp> k o n a m . <eos>"
+  },
+  {
+    "name": "12_zh_project",
+    "text": "پروژه ویژه انرژی پاک در ژاپن با پژوهش گسترده به نتیجه رسید.",
+    "duration_sec": 5.34,
+    "phones": "<bos> p r o ʒ e j e <sp> v i ʒ e j e <sp> e n e r ʒ i j e <sp> p ɑ k <sp> d a r <sp> ʒ ɑ p o n <sp> b ɑ <sp> p a ʒ u h e ʃ e <sp> ɡ o s t a r d e <sp> b e <sp> n a t i dʒ e <sp> r e s i d . <eos>"
   }
 ]

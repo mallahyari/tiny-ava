@@ -70,7 +70,7 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
     }
 
     private fun ensureModelsOnDisk(): File {
-        val dir = File(appContext.filesDir, "tiny_ava_models_v1")
+        val dir = File(appContext.filesDir, "tiny_ava_models_v2")
         if (!dir.exists()) dir.mkdirs()
         val files = listOf("g2p_encoder.onnx", "g2p_decoder.onnx", "tiny-ava-parisa.onnx")
         for (name in files) {
