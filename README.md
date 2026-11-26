@@ -1,5 +1,9 @@
 # tiny-ava
 
+<p>
+  <a href="https://buymeacoffee.com/mehdiyari"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=mehdiyari&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" height="38" alt="Buy me a coffee" /></a>
+</p>
+
 An **8.2M-parameter (`34.4 MB` ONNX)** bilingual **Persian (Farsi) + English** text-to-speech model trained **from scratch**, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It packs **3 voices in ONE model** — **Parisa** (Persian female), **Mana** (real studio human Persian male), and **Maya** (American English female) — running **34×–81× faster than real time on CPU**, 100% offline in the browser or on Android.
 
 - **Live in-browser demo (3 voices, FA + EN):** https://huggingface.co/spaces/mehdi-hf/tiny-ava-demo
