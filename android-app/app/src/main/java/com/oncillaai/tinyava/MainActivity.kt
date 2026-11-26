@@ -454,6 +454,10 @@ private fun TinyAvaRoot(
 
                     Tab.VOICE -> VoiceSettingsScreen(
                         settings = settings,
+                        onPersianVoiceChange = { v ->
+                            app.settingsStore.update { it.copy(persianVoice = v) }
+                            app.engine.clearPhraseCache()
+                        },
                         onSpeedChange = { v -> app.settingsStore.update { it.copy(speed = v) } },
                         onPitchChange = { v -> app.settingsStore.update { it.copy(pitchSemitones = v) } },
                         onThemeChange = { m -> app.settingsStore.update { it.copy(themeMode = m) } },

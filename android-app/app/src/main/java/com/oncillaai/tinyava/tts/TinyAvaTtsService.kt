@@ -28,8 +28,11 @@ class TinyAvaTtsService : TextToSpeechService() {
     private val parisaVoice by lazy {
         Voice("fa-IR-parisa-local", persianLocale, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_VERY_LOW, false, emptySet())
     }
-    private val englishVoice by lazy {
-        Voice("en-US-ava-local", englishLocale, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_VERY_LOW, false, emptySet())
+    private val manaVoice by lazy {
+        Voice("fa-IR-mana-local", persianLocale, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_VERY_LOW, false, emptySet())
+    }
+    private val mayaVoice by lazy {
+        Voice("en-US-maya-local", englishLocale, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_VERY_LOW, false, emptySet())
     }
 
     override fun onCreate() {
@@ -58,19 +61,19 @@ class TinyAvaTtsService : TextToSpeechService() {
         return avail
     }
 
-    override fun onGetVoices(): MutableList<Voice> = mutableListOf(parisaVoice, englishVoice)
+    override fun onGetVoices(): MutableList<Voice> = mutableListOf(parisaVoice, manaVoice, mayaVoice)
 
     override fun onGetDefaultVoiceNameFor(lang: String?, country: String?, variant: String?): String? {
         val l = lang?.lowercase(Locale.ROOT) ?: return null
         return when (l) {
             "fas", "fa", "per" -> parisaVoice.name
-            "eng", "en" -> englishVoice.name
+            "eng", "en" -> mayaVoice.name
             else -> null
         }
     }
 
     override fun onIsValidVoiceName(voiceName: String?): Int {
-        return if (voiceName == parisaVoice.name || voiceName == englishVoice.name) {
+        return if (voiceName == parisaVoice.name || voiceName == manaVoice.name || voiceName == mayaVoice.name) {
             TextToSpeech.SUCCESS
         } else {
             TextToSpeech.ERROR

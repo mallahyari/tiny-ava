@@ -95,7 +95,7 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "فارسی (پریسا) + انگلیسی · ۲۴ کیلوهرتز · آفلاین",
+                        text = "${settings.persianVoice.labelFa} + مایا (انگلیسی) · ۲۴ کیلوهرتز · آفلاین",
                         color = c.okInk.copy(alpha = 0.9f),
                         fontSize = 13.sp,
                     )
@@ -146,7 +146,7 @@ fun HomeScreen(
                     )
                 }
                 Text(
-                    text = "پریسا · ${"%.1f".format(settings.speed)}×",
+                    text = "${settings.persianVoice.labelFa} · ${"%.1f".format(settings.speed)}×",
                     fontSize = 13.sp,
                     color = c.muted,
                 )

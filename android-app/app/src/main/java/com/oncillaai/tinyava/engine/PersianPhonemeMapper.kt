@@ -1,8 +1,8 @@
 package com.oncillaai.tinyava.engine
 
 /**
- * Exact 46-symbol Persian IPA table and ByT5 byte-tokenizer for tiny-ava + persian-g2p-tiny.
- * Matches `tiny-ava-parisa.json`, `src/tiny_voca/text.py`, and `demo/worker.js` 1-to-1.
+ * Exact 84-symbol unified Persian + English IPA table for tiny-ava v2 (`tiny-ava-v2.onnx`)
+ * and ByT5 byte-tokenizer for `persian-g2p-tiny`.
  */
 object PersianPhonemeMapper {
 
@@ -14,17 +14,21 @@ object PersianPhonemeMapper {
 
     val SYMBOLS: List<String> = listOf(
         PAD, BOS, EOS, SP, UNK,
-        "،", ".", "؟", "!", "؛", ":", "«", "»", "(", ")", "—", "…",
-        "p", "b", "t", "d", "k", "ɡ", "q", "ʔ",
-        "f", "v", "s", "z", "ʃ", "ʒ", "x", "h",
-        "tʃ", "dʒ", "m", "n", "l", "r", "j",
-        "a", "e", "o", "i", "u", "ɑ",
+        ",", ".", "?", "!", ";", ":", "\"", "'", "(", ")", "—", "…",
+        // 29 unified consonants (26 EN + 3 FA-specific q, x, r)
+        "p", "b", "t", "d", "k", "ɡ", "f", "v", "θ", "ð", "s", "z", "ʃ", "ʒ", "h",
+        "m", "n", "ŋ", "l", "ɹ", "j", "w", "tʃ", "dʒ", "ɾ", "ʔ", "q", "x", "r",
+        // 38 unified vowels (33 EN + 5 FA-specific a, e, o, u, ɑ)
+        "ə", "ɐ", "ɚ", "ᵻ", "ɪ", "i", "iː", "ɛ", "æ", "ʌ", "ɑː", "ɔ", "ɔː", "ʊ", "uː", "ɜː",
+        "eɪ", "aɪ", "ɔɪ", "oʊ", "aʊ", "iə", "oː",
+        "ɑːɹ", "ɔːɹ", "oːɹ", "ɪɹ", "ɛɹ", "ʊɹ", "aɪɚ", "aɪə", "əl", "n̩",
+        "a", "e", "o", "u", "ɑ",
     )
 
     val SYMBOL_TO_ID: Map<String, Int> = SYMBOLS.withIndex().associate { (i, s) -> s to i }
-    val PUNCTUATION: Set<Char> = setOf('،', '.', '؟', '!', '؛', ':', '«', '»', '(', ')', '—', '…')
+    val PUNCTUATION: Set<Char> = setOf(',', '.', '?', '!', ';', ':', '"', '\'', '(', ')', '—', '…')
     val PHONE_SET: Set<String> = SYMBOLS.drop(17).toSet()
-    val VOWELS: Set<String> = setOf("a", "e", "o", "i", "u", "ɑ")
+    val VOWELS: Set<String> = SYMBOLS.drop(46).toSet()
 
     val REPR1_TO_IPA: Map<Char, String> = mapOf(
         'a' to "a", 'A' to "ɑ", 'e' to "e", 'o' to "o", 'i' to "i", 'u' to "u",
@@ -39,46 +43,49 @@ object PersianPhonemeMapper {
         val stressIds: LongArray,
     )
 
-    /** Pure-Kotlin ByT5 byte encoder: UTF-8 byte + 3, terminated by EOS (1). */
     fun byt5Encode(text: String): LongArray {
         val bytes = text.toByteArray(Charsets.UTF_8)
         val out = LongArray(bytes.size + 1)
-        for (i in bytes.indices) {
-            out[i] = (bytes[i].toInt() and 0xFF) + 3L
-        }
-        out[bytes.size] = 1L // </s> EOS
+        for (i in bytes.indices) out[i] = (bytes[i].toInt() and 0xFF) + 3L
+        out[bytes.size] = 1L
         return out
     }
 
-    /** Pure-Kotlin ByT5 byte decoder: strips special tokens (< 3), decodes UTF-8. */
     fun byt5Decode(ids: List<Int>): String {
         val raw = ByteArray(ids.size)
         var n = 0
         for (id in ids) {
-            if (id in 3..258) {
-                raw[n++] = (id - 3).toByte()
-            }
+            if (id in 3..258) raw[n++] = (id - 3).toByte()
         }
         return String(raw, 0, n, Charsets.UTF_8).trim()
     }
 
-    /** Split normalized text into (isPunctuation, piece) chunks. */
+    /** Fold Persian punctuation into the shared v2 pause tokens (، -> , , ؟ -> ? , ؛ -> ;). */
+    fun foldSharedPunctuation(text: String): String {
+        return text
+            .replace('،', ',')
+            .replace('؟', '?')
+            .replace('؛', ';')
+            .replace('«', '"')
+            .replace('»', '"')
+    }
+
     fun splitPunctChunks(text: String): List<Pair<Boolean, String>> {
+        val folded = foldSharedPunctuation(text)
         val out = mutableListOf<Pair<Boolean, String>>()
         var start = 0
-        for (i in text.indices) {
-            if (text[i] !in PUNCTUATION) continue
-            val seg = text.substring(start, i).trim()
+        for (i in folded.indices) {
+            if (folded[i] !in PUNCTUATION) continue
+            val seg = folded.substring(start, i).trim()
             if (seg.isNotEmpty()) out.add(false to seg)
-            out.add(true to text[i].toString())
+            out.add(true to folded[i].toString())
             start = i + 1
         }
-        val tail = text.substring(start).trim()
+        val tail = folded.substring(start).trim()
         if (tail.isNotEmpty()) out.add(false to tail)
         return out
     }
 
-    /** Convert Repr. 1 phoneme string into words of (ipaSymbol, stressLevel 0/1/2). */
     fun repr1ToWords(repr1: String): List<List<Pair<String, Int>>> {
         val wordsOut = mutableListOf<List<Pair<String, Int>>>()
         for (rawW in repr1.trim().split(Regex("\\s+"))) {
@@ -104,14 +111,12 @@ object PersianPhonemeMapper {
                 if (ipa != null) phones.add(ipa to 0)
                 i++
             }
-            // Persian primary word-final lexical stress on last vowel of stem
-            for (i in phones.lastIndex downTo 0) {
-                if (phones[i].first in VOWELS) {
-                    phones[i] = phones[i].first to 1
+            for (k in phones.lastIndex downTo 0) {
+                if (phones[k].first in VOWELS) {
+                    phones[k] = phones[k].first to 1
                     break
                 }
             }
-            // Explicit ezafe vowel carries stress=2
             if (ez.isNotEmpty()) {
                 for (ch in ez) {
                     val ipa = REPR1_TO_IPA[ch]
@@ -123,7 +128,6 @@ object PersianPhonemeMapper {
         return wordsOut
     }
 
-    /** Assemble final <bos> ... <eos> token & stress arrays from (isPunct, value/words). */
     fun buildTokenSequence(chunks: List<Pair<Boolean, Any>>): TokenizedSentence? {
         val syms = mutableListOf(BOS)
         val stress = mutableListOf(0L)

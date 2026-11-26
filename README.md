@@ -1,31 +1,32 @@
 # tiny-ava
 
-A **4.5M-parameter (~18 MB PyTorch / ~20 MB ONNX)** Persian (Farsi) text-to-speech model trained **from scratch** on ~20 hours of synthetic speech, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It runs **38×–77× faster than real time on CPU** and **100% client-side in your browser** via ONNX Runtime Web (~29 MB total including Persian G2P).
+An **8.2M-parameter (`34.4 MB` ONNX)** bilingual **Persian (Farsi) + English** text-to-speech model trained **from scratch**, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It packs **3 voices in ONE model** — **Parisa** (Persian female), **Mana** (real studio human Persian male), and **Maya** (American English female) — running **34×–81× faster than real time on CPU**, 100% offline in the browser or on Android.
 
-- **Live in-browser demo:** https://huggingface.co/spaces/mehdi-hf/tiny-ava-demo
-- **Android App (Offline Bilingual TalkBack TTS):** [Download `tiny-ava-v1.1.0-arm64.apk` (78 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v1.1.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
+- **Live in-browser demo (3 voices, FA + EN):** https://huggingface.co/spaces/mehdi-hf/tiny-ava-demo
+- **Android App (Offline Bilingual TalkBack TTS):** [Download `tiny-ava-v2.0.0-arm64.apk` (71 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.0.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
 - **Hugging Face model:** https://huggingface.co/mehdi-hf/tiny-ava
 
-![tiny-ava browser demo](assets/demo-screenshot.png)
+![tiny-ava v2 in-browser demo (Parisa, Mana, Maya)](assets/demo-screenshot.png)
 
 ---
 
-## Android App (100% Offline Persian TalkBack Engine)
+## Android App (100% Offline Bilingual Persian + English TalkBack Engine)
 
 ![tiny-ava Android app — High-Contrast accessibility theme on Pixel 3](assets/android-screenshots.png)
 
 ![tiny-ava Android app — Warm Light & Dark themes (Home, Reader, Voice Settings, About) on Pixel 3](assets/android-themes.png)
 
-The [`android-app/`](android-app/) app packages `tiny-ava` (`20.4 MB`) + `persian-g2p-tiny` (`8.4 MB`) inside a native Kotlin + Jetpack Compose + ONNX Runtime Android APK designed for **blind and low-vision Persian users**:
+The [`android-app/`](android-app/) app bundles our unified **`tiny-ava-v2.onnx`** (`34.4 MB`, 3 voices) + polished **`persian-g2p-tiny`** (`8.4 MB` int8, `27/27` `ژ`, `86.4%` diacritics) + English lexicon (`3.3 MB`) inside a native Kotlin + Jetpack Compose + ONNX Runtime APK designed for **blind and low-vision Persian users**:
 
-- **System-wide Dual-Language Android `TextToSpeechService` (`fa-IR` + `en-US`):** Plugs directly into **TalkBack**, WhatsApp, Telegram, X, and Chrome — 100% offline. Automatically routes Persian spans to **`tiny-ava` (Parisa)** and English spans to **`tiny-voca` English (Apache-2.0)** with clean emoji/symbol stripping.
-- **Glitch-Free High Speed up to `3.5×` (Sonic WSOLA):** Caps neural speed at `1.30×` and applies pitch-preserving Sonic WSOLA waveform time-stretching above `1.30×` — zero distortion at fast blind-user TalkBack speeds (`1.5× / 2.0× / 2.5× / 3.0× / 3.5×`).
+- **3 Voices in ONE Unified Model:** Choose between **پریسا (Parisa, female)** and **مانا (Mana, real studio human male)** for Persian, while English spans speak automatically with **مایا (Maya, American English)** — 7 MB smaller than v1.1!
+- **System-wide Dual-Language Android `TextToSpeechService` (`fa-IR` + `en-US`):** Plugs directly into **TalkBack**, WhatsApp, Telegram, X, and Chrome — 100% offline with clean emoji/symbol stripping.
+- **Glitch-Free High Speed up to `3.5×` (Sonic WSOLA):** Caps neural speed at `1.30×` and applies pitch-preserving Sonic WSOLA waveform time-stretching for `1.30× → 3.5×` (`1.0× / 1.5× / 2.0× / 2.5× / 3.0×` TalkBack presets).
 - **Accessibility-first RTL Persian UI:** Warm Light, Dark, and **WCAG AAA High-Contrast (Yellow/Black)** themes, large 56–64dp touch targets, 1-tap **Clipboard Paste & Read**, Android **Share Intent** (*«خواندن با آوا»*), Save WAV, and an editable **Custom Pronunciation Dictionary** (`Wi-Fi ← وای‌فای`, `تست ← تُست`, etc.).
 - **Built-in Persian TalkBack Normalizer:** Converts numbers, clock times (`۱۴:۳۰`), percentages (`۸۵٪`), and common English UI words automatically, plus a 256-phrase LRU RAM cache for `<5 ms` repeated menu buttons.
 
 ### Install on Android
-1. Download **[`tiny-ava-v1.1.0-arm64.apk`](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v1.1.0-arm64.apk)** (recommended for almost all modern phones; use `universal` only for older 32-bit devices) and tap to install.
-2. Open **آوا (tiny-ava)** and tap **«انتخاب آوا به عنوان موتور TalkBack»** (or go to **Settings → Accessibility → Text-to-speech output → Preferred engine → آوا**).
+1. Download **[`tiny-ava-v2.0.0-arm64.apk`](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.0.0-arm64.apk)** (71 MB — recommended for almost all modern Android phones; use `universal` only for older 32-bit devices) and tap to install.
+2. Open **آوا (tiny-ava)** → pick **پریسا** or **مانا** in the **صدا** tab → tap **«انتخاب آوا به عنوان موتور TalkBack»** (or go to **Settings → Accessibility → Text-to-speech output → Preferred engine → آوا**).
 3. Tap **Listen to an example** or enable **TalkBack** — works completely offline!
 
 ### Build From Source
@@ -47,129 +48,37 @@ python3 demo/serve_local.py
 ```
 
 Then open **`http://127.0.0.1:8788`** in Chrome, Safari, Firefox, or Edge:
-1. Click **Download models (~29 MB)** (or click **Speak** directly).
-2. The first visit caches the ONNX models (`20.4 MB` TTS + `8.4 MB` int8 Persian G2P) locally in your browser's `CacheStorage`; every visit after that loads instantly and works **100% offline**.
-3. Type any Persian text (plain text works automatically, and optional diacritics `ـَ`, `ـِ`, `ـُ` override vowels & ezafe — e.g. `بارانِ ریزی`, `گُل` vs `گِل`).
+1. Click **Download models (~46 MB)** (or click **Speak** directly) — cached locally in `CacheStorage` for instant offline use on every return visit.
+2. Pick **Parisa**, **Mana**, or **Maya** and type Persian, English, or mixed sentences (optional diacritics `ـَ`, `ـِ`, `ـُ` override Persian vowels & ezafe).
 
 ### Hosting on Your Own Website or a Static HF Space
 
-The `demo/` directory is a completely self-contained static site (`index.html`, `app.js`, `worker.js`, and `assets/`). Copy the `demo/` folder directly onto any static host (Cloudflare Pages, Vercel, Netlify, GitHub Pages, or a Hugging Face Static Space) — no backend required.
-
----
-
-## Quickstart: Run in Python (ONNX Runtime, No PyTorch Needed)
-
-```bash
-pip install onnxruntime numpy soundfile
-```
-
-```python
-import json
-import numpy as np
-import onnxruntime as ort
-import soundfile as sf
-
-# 1. Load ONNX sessions (8.4 MB int8 G2P + 20.4 MB tiny-ava TTS)
-enc = ort.InferenceSession("demo/assets/g2p/g2p_encoder.onnx")
-dec = ort.InferenceSession("demo/assets/g2p/g2p_decoder.onnx")
-tts = ort.InferenceSession("models/parisa/tiny-ava-parisa.onnx")
-
-meta = json.load(open("models/parisa/tiny-ava-parisa.json", encoding="utf-8"))
-sym2id = {s: i for i, s in enumerate(meta["symbols"])}
-phone_set = set(meta["symbols"][17:])
-vowels = {"a", "e", "o", "i", "u", "ɑ"}
-r1_to_ipa = {
-    "a": "a", "A": "ɑ", "e": "e", "o": "o", "i": "i", "u": "u",
-    "p": "p", "b": "b", "t": "t", "d": "d", "k": "k", "g": "ɡ", "q": "q", "?": "ʔ",
-    "f": "f", "v": "v", "s": "s", "z": "z", "S": "ʃ", "Z": "ʒ", "x": "x", "h": "h",
-    "C": "tʃ", "j": "dʒ", "m": "m", "n": "n", "l": "l", "r": "r", "y": "j",
-}
-
-def persian_g2p(text: str) -> str:
-    in_ids = np.array([[b + 3 for b in text.encode("utf-8")] + [1]], dtype=np.int64)
-    attn = np.ones_like(in_ids, dtype=np.int64)
-    (eh,) = enc.run(None, {"input_ids": in_ids, "attention_mask": attn})
-    out_ids = [0]
-    for _ in range(256):
-        (logits,) = dec.run(None, {
-            "decoder_input_ids": np.array([out_ids], dtype=np.int64),
-            "encoder_hidden_states": eh,
-            "encoder_attention_mask": attn,
-        })
-        nxt = int(logits[0, -1].argmax())
-        if nxt == 1:
-            break
-        out_ids.append(nxt)
-    return bytes(i - 3 for i in out_ids[1:] if 3 <= i <= 258).decode("utf-8", errors="ignore").strip()
-
-def speak(text: str, out_wav: str = "hello.wav", speed: float = 1.0, pitch_shift: float = 0.0, pitch_range: float = 1.05):
-    repr1 = persian_g2p(text)
-    syms, stress = ["<bos>"], [0]
-    for rw in repr1.split():
-        if syms[-1] in phone_set:
-            syms.append("<sp>"); stress.append(0)
-        if rw.endswith("-ye"):
-            stem, ez = rw[:-3], "ye"
-        elif rw.endswith("-e"):
-            stem, ez = rw[:-2], "e"
-        else:
-            stem, ez = rw, ""
-        stem = stem.replace("-", "")
-        if len(stem) >= 2 and stem[0] == "?" and stem[1] in "aAeoiu":
-            stem = stem[1:]
-        phs = [[r1_to_ipa[c], 0] for c in stem if c in r1_to_ipa]
-        for i in range(len(phs) - 1, -1, -1):
-            if phs[i][0] in vowels:
-                phs[i][1] = 1
-                break
-        for c in ez:
-            if c in r1_to_ipa:
-                phs.append([r1_to_ipa[c], 2 if r1_to_ipa[c] in vowels else 0])
-        for p, lvl in phs:
-            syms.append(p); stress.append(lvl)
-    syms.extend([".", "<eos>"]); stress.extend([0, 0])
-
-    audio, _ = tts.run(None, {
-        "tokens": np.array([[sym2id[s] for s in syms]], dtype=np.int64),
-        "stress": np.array([stress], dtype=np.int64),
-        "voice": np.array([0], dtype=np.int64),
-        "speed": np.array([speed], dtype=np.float32),
-        "pitch_shift": np.array([pitch_shift], dtype=np.float32),
-        "pitch_range": np.array([pitch_range], dtype=np.float32),
-    })
-    wav = audio[0]
-    peak = float(np.abs(wav).max())
-    if peak > 0.99:
-        wav = wav * (0.99 / peak)
-    sf.write(out_wav, wav, 24000)
-
-speak("سلام، حال شما چطور است؟ امروز هوای تهران آفتابی است.", "hello.wav")
-```
+The `demo/` directory is a self-contained static site (`index.html`, `worker.js`, and `assets/`). Copy `demo/` onto any static host (Cloudflare Pages, Vercel, Netlify, GitHub Pages, or a Hugging Face Static Space) — no backend required.
 
 ---
 
 ## Models Included
 
-| Voice | File | Format | Size | Parameters | Sample Rate | CPU Speed (1t / 4t) |
-| :--- | :--- | :--- | ---: | ---: | ---: | ---: |
-| **Parisa** | `models/parisa/inference.pt` | PyTorch | 18.2 MB | 4.53M | 24 kHz | **38.5× / 77.4× real-time** |
-| **Parisa** | `models/parisa/tiny-ava-parisa.onnx` | ONNX (opset 17) | 20.4 MB | 4.53M | 24 kHz | ONNX Runtime / Web |
-| **G2P (tiny)** | `demo/assets/g2p/g2p_{encoder,decoder}.onnx` | ONNX (int8) | 8.4 MB | 8.26M | — | ~60 ms / sentence |
+| Model | File | Voices | Languages | Size | Params | CPU Speed (1t / 4t) |
+| :--- | :--- | :--- | :--- | ---: | ---: | ---: |
+| **`tiny-ava v2`** *(Recommended)* | `models/v2/tiny-ava-v2.onnx` / `.pt` | **Parisa** (FA), **Mana** (real human FA), **Maya** (EN) | **FA + EN** | **34.4 MB** / 31.3 MB | **8.20M** | **34.1× / 81.2× RT** |
+| `tiny-ava v1` | `models/parisa/tiny-ava-parisa.onnx` / `.pt` | Parisa (FA) | FA | 20.4 MB / 18.2 MB | 4.53M | 41.9× / 83.3× RT |
+| `persian-g2p-tiny` (ONNX int8) | `demo/assets/g2p/g2p_{encoder,decoder}.onnx` | — | FA | 8.4 MB | 8.26M | ~60 ms / sentence |
 
-## Benchmarks (50 Held-Out Persian Test Clips, `faster-whisper large-v3`)
+## Benchmarks (`tiny-ava v2`, Held-Out Test Clips, `faster-whisper large-v3`)
 
-| Model | Persian CER ↓ | Persian WER ↓ |
-| :--- | ---: | ---: |
-| **tiny-ava (Parisa, 4.53M)** | **6.95%** | **36.96%** |
-| Teacher recordings (reference floor) | 8.20% | 40.22% |
+| Voice | Language | Data Source | **v2 CER ↓** | Ref CER | **v2 WER ↓** | Ref WER |
+| :--- | :---: | :--- | ---: | ---: | ---: | ---: |
+| **`mana`** *(id 2)* | Persian (`fa`) | **Real studio human** (Mana-TTS HIGH, CC0) | **5.79%** | 8.13% | **32.28%** | 40.94% |
+| **`parisa`** *(id 0)* | Persian (`fa`) | Chatterbox Run C (incl. 1,494 `ژ` phones) | **7.48%** | 9.33% | **40.14%** | 44.66% |
+| **`maya`** *(id 3)* | English (`en`) | `n4ze3m/tiny-voca` (CC BY 4.0) | **2.78%** | 1.72% | **10.58%** | 7.94% |
 
 ## Samples
 
-12 sample 24 kHz WAVs covering greetings, ezafe chains, explicit kasra (`ـِ`), homographs (`تست`, `گل`/`گِل`, `مرد`), Persian uvulars (`ق/غ/خ/ع`), questions, long text, and colloquial Persian are included in [`samples/`](samples/).
+24 kHz WAV samples for **Parisa**, **Mana**, **Maya**, and **code-switched FA+EN** are included in [`samples/v2/`](samples/v2/) (and v1 Parisa samples in [`samples/`](samples/)).
 
 ## Credits & License
 
-- **Model Weights License:** **CC BY 4.0** — free for personal, research, and commercial use with attribution (*"Powered by tiny-ava (Mehdi Allahyari / OncillaAI)"* + link to `mehdi-hf/tiny-ava`).
+- **Model Weights License:** **CC BY 4.0** — free for personal, research, and commercial use with attribution (*"Powered by tiny-ava (Mehdi Allahyari / OncillaAI)"* + link to [`mehdi-hf/tiny-ava`](https://huggingface.co/mehdi-hf/tiny-ava)).
 - **Code License:** Apache-2.0 (see [`LICENSE`](LICENSE)).
-- **Architecture:** Built on [`n4ze3m/tiny-voca`](https://github.com/n4ze3m/tiny-voca) (Apache-2.0) by Muhammed Nazeem.
-- **Persian G2P:** [`mehdi-hf/persian-g2p-tiny`](https://huggingface.co/mehdi-hf/persian-g2p-tiny) (MIT) · `mehdi-hf/persian-g2p-0.6b` (Apache-2.0).
+- **Architecture & Data Credits:** Built on [`n4ze3m/tiny-voca`](https://github.com/n4ze3m/tiny-voca) (Apache-2.0, English voice data CC BY 4.0), [`MahtaFetrat/Mana-TTS`](https://huggingface.co/datasets/MahtaFetrat/Mana-TTS) (CC0-1.0), and [`mehdi-hf/persian-g2p-tiny`](https://huggingface.co/mehdi-hf/persian-g2p-tiny) (MIT).

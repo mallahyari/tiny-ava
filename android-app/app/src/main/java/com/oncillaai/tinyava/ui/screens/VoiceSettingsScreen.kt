@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.oncillaai.tinyava.data.AppThemeMode
+import com.oncillaai.tinyava.data.AvaPersianVoice
 import com.oncillaai.tinyava.data.SettingsState
 import com.oncillaai.tinyava.ui.theme.LocalAvaColors
 import kotlin.math.abs
@@ -42,6 +43,7 @@ import kotlin.math.abs
 @Composable
 fun VoiceSettingsScreen(
     settings: SettingsState,
+    onPersianVoiceChange: (AvaPersianVoice) -> Unit,
     onSpeedChange: (Float) -> Unit,
     onPitchChange: (Float) -> Unit,
     onThemeChange: (AppThemeMode) -> Unit,
@@ -60,7 +62,46 @@ fun VoiceSettingsScreen(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        // Speed card with TalkBack fast presets (1.0x .. 2.5x)
+        // Persian Voice Selector (Parisa female vs Mana real studio human male)
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = c.card,
+            border = BorderStroke(1.5.dp, c.line),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("انتخاب صدای فارسی", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = c.ink)
+                Text("انگلیسی به‌طور خودکار با صدای مایا خوانده می‌شود", fontSize = 12.5.sp, color = c.muted)
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    for (voice in AvaPersianVoice.entries) {
+                        val selected = settings.persianVoice == voice
+                        Button(
+                            onClick = { onPersianVoiceChange(voice) },
+                            shape = RoundedCornerShape(14.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected) c.accent else c.soft,
+                                contentColor = if (selected) c.accentInk else c.ink,
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 58.dp),
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(voice.labelFa, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+                                Text(voice.subtitleFa, fontSize = 11.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Speed card with TalkBack fast presets (1.0x .. 3.0x)
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = c.card,

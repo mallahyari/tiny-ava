@@ -27,15 +27,6 @@ class EnglishPhonemizer private constructor(
         )
 
         fun loadFromAssets(context: Context): EnglishPhonemizer {
-            val cfgText = context.assets.open("models/en/config_en.json").bufferedReader().use { it.readText() }
-            val vocabObj = JSONObject(cfgText).getJSONObject("vocab")
-            val vocab = HashMap<String, Int>(vocabObj.length())
-            val keys = vocabObj.keys()
-            while (keys.hasNext()) {
-                val k = keys.next()
-                vocab[k] = vocabObj.getInt(k)
-            }
-
             val lex = HashMap<String, String>(130_000)
             context.assets.open("models/en/lexicon_en.tsv").use { stream ->
                 BufferedReader(InputStreamReader(stream, Charsets.UTF_8)).useLines { lines ->
@@ -47,7 +38,7 @@ class EnglishPhonemizer private constructor(
                     }
                 }
             }
-            return EnglishPhonemizer(vocab, lex)
+            return EnglishPhonemizer(PersianPhonemeMapper.SYMBOL_TO_ID, lex)
         }
 
         /** Pure-JVM constructor for unit tests without Android Context. */

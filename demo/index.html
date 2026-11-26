@@ -3,111 +3,103 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>tiny-ava — Persian Text to Speech in Your Browser</title>
+<title>tiny-ava v2 — Bilingual Persian &amp; English TTS in Your Browser</title>
 <style>
   :root {
     --bg: #f6f3ee; --card: #fffdf9; --ink: #211d1a; --muted: #6d655d; --line: #e2dbd1;
-    --accent: #b4532a; --accent-ink: #fff; --soft: #f0e9df; --ok: #2f7d4f; --bad: #b3261e;
+    --accent: #b4532a; --accent-ink: #fff; --soft: #f0e9df; --bad: #b3261e;
     --shadow: 0 1px 2px rgba(33,29,26,.06), 0 8px 28px rgba(33,29,26,.06);
   }
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #17140f; --card: #201c16; --ink: #f1ebe2; --muted: #a59b8e; --line: #353027;
-      --accent: #e07a4d; --accent-ink: #1b0f08; --soft: #2a251d; --ok: #6fcf97; --bad: #ff8b84;
-      --shadow: none; color-scheme: dark;
-    }
+    :root { --bg:#17140f; --card:#201c16; --ink:#f1ebe2; --muted:#a59b8e; --line:#353027; --accent:#e07a4d; --accent-ink:#1b0f08; --soft:#2a251d; --bad:#ff8b84; --shadow:none; color-scheme:dark; }
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.55 -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif;
-    padding: 28px max(16px, env(safe-area-inset-left)) 48px max(16px, env(safe-area-inset-right));
-  }
-  main { max-width: 900px; margin: 0 auto; }
-  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  h1 { font: 600 32px/1.15 "New York", "Iowan Old Style", Georgia, serif; margin: 0 0 4px; letter-spacing: -.01em; }
-  .badge { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--muted); border: 1px solid var(--line); }
-  .sub { color: var(--muted); margin: 4px 0 22px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); }
-  label.field { display: block; font-weight: 600; font-size: 12px; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .05em; }
-  textarea {
-    width: 100%; min-height: 130px; resize: vertical; padding: 13px 15px;
-    border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink);
-    font: 20px/1.85 "Geeza Pro", "Vazirmatn", "Noto Naskh Arabic", Tahoma, serif;
-  }
-  textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .hint { color: var(--muted); font-size: 12.5px; margin: 6px 2px 0; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .chip { border: 1px solid var(--line); background: var(--soft); color: var(--ink); border-radius: 999px; padding: 5px 13px; font-size: 13px; cursor: pointer; }
-  .chip:hover { border-color: var(--accent); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 8px; }
-  input[type=range] { width: 100%; accent-color: var(--accent); }
-  .val { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
-  .actions { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-  .modelbox { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin-top: 18px; padding: 12px 16px; background: var(--soft); border-radius: 12px; font-size: 13.5px; }
-  .modelbox #modeltext { flex: 1 1 260px; min-width: 0; color: var(--muted); }
-  .modelbox a { color: var(--muted); font-size: 13px; }
-  button.main { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px; padding: 11px 24px; font: 600 15px inherit; cursor: pointer; }
-  button.main:disabled { opacity: .5; cursor: progress; }
-  button.sec { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; font: inherit; cursor: pointer; }
-  #status { color: var(--muted); font-size: 13.5px; }
-  #status.err { color: var(--bad); font-weight: 500; }
-  progress { width: 100%; height: 8px; accent-color: var(--accent); margin-top: 14px; }
-  .out { margin-top: 22px; border-top: 1px solid var(--line); padding-top: 18px; }
-  .wave { display: block; width: 100%; height: 110px; cursor: pointer; touch-action: none; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px; }
-  .stat { background: var(--soft); border-radius: 14px; padding: 14px 16px; min-width: 0; }
-  .stat .l { display: block; color: var(--muted); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
-  .stat b { display: block; font-size: 24px; line-height: 1.25; margin: 4px 0 2px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .stat .c { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
-  .playrow { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
-  .playrow audio { flex: 1 1 300px; min-width: 0; }
-  .btn { border: 1px solid var(--line); border-radius: 999px; padding: 10px 20px; color: var(--ink); text-decoration: none; font-size: 14px; white-space: nowrap; }
-  .btn:hover { border-color: var(--accent); }
-  details.phones { margin-top: 14px; font-size: 13px; color: var(--muted); }
-  details.phones pre { background: var(--soft); padding: 10px 12px; border-radius: 10px; overflow-x: auto; color: var(--ink); font-size: 12.5px; white-space: pre-wrap; }
-  .specs { margin-top: 32px; border-top: 1px solid var(--line); }
-  .specs-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 28px; padding: 22px 4px; border-bottom: 1px solid var(--line); }
-  @media (max-width: 620px) { .specs-row { grid-template-columns: 1fr; gap: 16px; } }
-  .spec b { display: block; font: 600 26px/1.2 "New York", "Iowan Old Style", Georgia, serif; color: var(--ink); font-variant-numeric: tabular-nums; margin-bottom: 4px; }
-  .spec span { display: block; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
-  footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 12.5px; margin-top: 18px; }
-  footer a { color: var(--muted); }
-  [hidden] { display: none !important; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 -apple-system, "SF Pro Text", "Helvetica Neue", sans-serif; padding:28px max(16px, env(safe-area-inset-left)) 48px max(16px, env(safe-area-inset-right)); }
+  main { max-width:900px; margin:0 auto; }
+  header { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  h1 { font:600 32px/1.15 "New York", "Iowan Old Style", Georgia, serif; margin:0 0 4px; letter-spacing:-.01em; }
+  .badge { font-size:12px; padding:4px 10px; border-radius:999px; background:var(--soft); color:var(--muted); border:1px solid var(--line); }
+  .sub { color:var(--muted); margin:4px 0 22px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:var(--shadow); }
+  label.field { display:block; font-weight:600; font-size:12px; color:var(--muted); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.05em; }
+  .voices { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+  @media (max-width: 600px) { .voices { grid-template-columns:1fr; } }
+  .vbtn { text-align:left; padding:11px 14px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; font:inherit; }
+  .vbtn strong { display:block; font-size:14.5px; }
+  .vbtn span { display:block; font-size:12px; color:var(--muted); }
+  .vbtn.active { border-color:var(--accent); background:var(--soft); }
+  textarea { width:100%; min-height:125px; resize:vertical; padding:13px 15px; border:1px solid var(--line); border-radius:12px; background:var(--bg); color:var(--ink); font:20px/1.85 "Geeza Pro", "Vazirmatn", "Noto Naskh Arabic", Tahoma, serif; }
+  textarea:focus, input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .hint { color:var(--muted); font-size:12.5px; margin:6px 2px 0; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .chip { border:1px solid var(--line); background:var(--soft); color:var(--ink); border-radius:999px; padding:5px 13px; font-size:13px; cursor:pointer; }
+  .chip:hover { border-color:var(--accent); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-top:10px; }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  .val { font-variant-numeric:tabular-nums; color:var(--ink); font-weight:600; }
+  .modelbox { display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap; margin-top:18px; padding:12px 16px; background:var(--soft); border-radius:12px; font-size:13.5px; }
+  .modelbox #modeltext { flex:1 1 260px; min-width:0; color:var(--muted); }
+  .modelbox a { color:var(--muted); font-size:13px; }
+  .actions { display:flex; align-items:center; gap:12px; margin-top:18px; flex-wrap:wrap; }
+  button.main { background:var(--accent); color:var(--accent-ink); border:0; border-radius:12px; padding:11px 24px; font:600 15px inherit; cursor:pointer; }
+  button.main:disabled { opacity:.5; cursor:progress; }
+  button.sec { background:transparent; color:var(--ink); border:1px solid var(--line); border-radius:12px; padding:10px 16px; font:inherit; cursor:pointer; }
+  #status { color:var(--muted); font-size:13.5px; }
+  #status.err { color:var(--bad); font-weight:500; }
+  progress { width:100%; height:8px; accent-color:var(--accent); margin-top:14px; }
+  .out { margin-top:22px; border-top:1px solid var(--line); padding-top:18px; }
+  .wave { display:block; width:100%; height:110px; cursor:pointer; touch-action:none; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-top:16px; }
+  .stat { background:var(--soft); border-radius:14px; padding:14px 16px; }
+  .stat .l { display:block; color:var(--muted); font-size:11px; letter-spacing:.07em; text-transform:uppercase; }
+  .stat b { display:block; font-size:24px; line-height:1.25; margin:4px 0 2px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .stat .c { display:block; color:var(--muted); font-size:12.5px; }
+  .playrow { display:flex; align-items:center; gap:12px; margin-top:16px; flex-wrap:wrap; }
+  .playrow audio { flex:1 1 300px; min-width:0; }
+  .btn { border:1px solid var(--line); border-radius:999px; padding:10px 20px; color:var(--ink); text-decoration:none; font-size:14px; white-space:nowrap; }
+  .btn:hover { border-color:var(--accent); }
+  details.phones { margin-top:14px; font-size:13px; color:var(--muted); }
+  details.phones pre { background:var(--soft); padding:10px 12px; border-radius:10px; overflow-x:auto; color:var(--ink); font-size:12.5px; white-space:pre-wrap; }
+  .specs { margin-top:32px; border-top:1px solid var(--line); }
+  .specs-row { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:20px 28px; padding:22px 4px; border-bottom:1px solid var(--line); }
+  @media (max-width: 620px) { .specs-row { grid-template-columns:1fr; gap:16px; } }
+  .spec b { display:block; font:600 26px/1.2 "New York", "Iowan Old Style", Georgia, serif; color:var(--ink); font-variant-numeric:tabular-nums; margin-bottom:4px; }
+  .spec span { display:block; color:var(--muted); font-size:13.5px; line-height:1.45; }
+  footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; color:var(--muted); font-size:12.5px; margin-top:18px; }
+  footer a { color:var(--muted); }
+  [hidden] { display:none !important; }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>tiny-ava</h1>
-    <span class="badge">4.5M TTS + 8.3M G2P · 29 MB · 100% In-Browser</span>
+    <h1>tiny-ava v2</h1>
+    <span class="badge">8.2M Unified · 3 Voices · FA + EN · 100% In-Browser</span>
   </header>
-  <p class="sub">Ultra-fast Persian (Farsi) text-to-speech running entirely on your device via ONNX Runtime Web — no server, no API key, nothing leaves your browser.</p>
+  <p class="sub">Ultra-fast bilingual Persian (Farsi) &amp; English text-to-speech running entirely on your device via ONNX Runtime Web — no server, no API key, nothing leaves your browser.</p>
 
   <section class="card">
-    <label class="field" for="text">Persian Text (Parisa Voice)</label>
-    <textarea id="text" dir="rtl" lang="fa" spellcheck="false">سلام، حال شما چطور است؟ امروز هوای تهران آفتابی است.</textarea>
-    <p class="hint">Plain Persian works automatically. Optional diacritics (ـَ ـِ ـُ) override vowels &amp; ezafe (e.g. بارانِ ریزی، گُل vs گِل).</p>
+    <label class="field">Voice</label>
+    <div class="voices" id="voices">
+      <button type="button" class="vbtn active" data-voice="parisa"><strong>Parisa (پریسا)</strong><span>Persian Female · Warm</span></button>
+      <button type="button" class="vbtn" data-voice="mana"><strong>Mana (مانا)</strong><span>Real Studio Human Male</span></button>
+      <button type="button" class="vbtn" data-voice="en_f2"><strong>Maya (مایا)</strong><span>American English Female</span></button>
+    </div>
+
+    <label class="field" for="text">Text (Persian, English, or Mixed)</label>
+    <textarea id="text" dir="auto" spellcheck="false">سلام، حال شما چطور است؟ امروز هوای تهران آفتابی است.</textarea>
+    <p class="hint">Plain Persian &amp; English work automatically (including mixed sentences). Optional diacritics (ـَ ـِ ـُ) override Persian vowels &amp; ezafe.</p>
     <div class="chips" id="samples"></div>
 
     <div class="grid">
-      <div>
-        <label class="field" for="speed">Speed <span class="val" id="speedVal">1.00×</span></label>
-        <input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1.0">
-      </div>
-      <div>
-        <label class="field" for="pitch">Pitch Shift <span class="val" id="pitchVal">0.0 st</span></label>
-        <input type="range" id="pitch" min="-4" max="4" step="0.5" value="0">
-      </div>
-      <div>
-        <label class="field" for="range">Expressiveness <span class="val" id="rangeVal">1.05</span></label>
-        <input type="range" id="range" min="0.7" max="1.4" step="0.05" value="1.05">
-      </div>
+      <div><label class="field">Speed <span class="val" id="speedVal">1.00×</span></label><input type="range" id="speed" min="0.7" max="1.4" step="0.05" value="1.0"></div>
+      <div><label class="field">Pitch Shift <span class="val" id="pitchVal">0.0 st</span></label><input type="range" id="pitch" min="-4" max="4" step="0.5" value="0"></div>
+      <div><label class="field">Expressiveness <span class="val" id="rangeVal">1.05</span></label><input type="range" id="range" min="0.7" max="1.4" step="0.05" value="1.05"></div>
     </div>
 
     <div class="modelbox" id="modelbox">
-      <span id="modeltext">Models (~29 MB) are not downloaded yet — fetched once and cached locally in this browser.</span>
-      <button class="sec" id="dlmodel" type="button">Download models (~29 MB)</button>
+      <span id="modeltext">Models (~46 MB) are not downloaded yet — fetched once and cached locally in this browser.</span>
+      <button class="sec" id="dlmodel" type="button">Download models (~46 MB)</button>
       <a href="#" id="rmmodel" hidden>Remove from this browser</a>
     </div>
 
@@ -123,10 +115,10 @@
       <div class="stats" id="stats"></div>
       <div class="playrow">
         <audio id="player" controls></audio>
-        <a class="btn" id="dl" download="tiny-ava-parisa.wav" hidden>Download WAV</a>
+        <a class="btn" id="dl" download="tiny-ava-v2.wav" hidden>Download WAV</a>
       </div>
       <details class="phones" id="phonesBox" hidden>
-        <summary>Inspect generated Persian IPA phonemes</summary>
+        <summary>Inspect generated 84-symbol FA+EN IPA phonemes</summary>
         <pre id="phones"></pre>
       </details>
     </div>
@@ -135,26 +127,26 @@
   <section class="specs" aria-label="Model specifications">
     <div class="specs-row">
       <div class="spec">
-        <b>4,531,147</b>
+        <b>8,199,179</b>
         <span>parameters, waveform generator included</span>
       </div>
       <div class="spec">
-        <b>20.4 MB</b>
-        <span>TTS model (ONNX, float32) · +8.4 MB G2P</span>
+        <b>34.4 MB</b>
+        <span>unified FA+EN TTS (ONNX, float32) · +8.4 MB G2P</span>
       </div>
       <div class="spec">
         <b>24 kHz</b>
-        <span>mono output</span>
+        <span>mono output · up to 81× real time on CPU</span>
       </div>
     </div>
     <div class="specs-row">
       <div class="spec">
-        <b>1 voice</b>
-        <span>Parisa, Persian (Farsi)</span>
+        <b>3 voices</b>
+        <span>Parisa (FA), Mana (real human FA), Maya (EN)</span>
       </div>
       <div class="spec">
-        <b>20.0 hours</b>
-        <span>of synthetic training speech</span>
+        <b>53.5 hours</b>
+        <span>real studio + synthetic bilingual training speech</span>
       </div>
       <div class="spec">
         <b>CC BY 4.0</b>
@@ -164,9 +156,154 @@
   </section>
 
   <footer>
-    <span>Powered by <strong>tiny-ava</strong> (OncillaAI) · Model weights CC BY 4.0 · Code Apache-2.0</span>
+    <span>Powered by <strong>tiny-ava v2</strong> (OncillaAI) · <a href="https://huggingface.co/mehdi-hf/tiny-ava" target="_blank" rel="noopener">Model Card</a> · <a href="https://github.com/mallahyari/tiny-ava" target="_blank" rel="noopener">Android App &amp; GitHub</a></span>
   </footer>
 </main>
-<script type="module" src="app.js"></script>
+<script>
+const SAMPLES = [
+  { label: "Parisa · Greeting", voice: "parisa", text: "سلام، حال شما چطور است؟ امروز هوای تهران آفتابی است." },
+  { label: "Parisa · ژ (شارژ/ژاپن)", voice: "parisa", text: "موبایل من شارژ نداره و باید پروژه ویژه انرژی در ژاپن را بررسی کنم." },
+  { label: "Parisa · Bilingual FA+EN", voice: "parisa", text: "سلام، Captain Phoenix امروز درباره Artificial Intelligence و tiny-ava صحبت کرد." },
+  { label: "Mana (Human) · Ezafe", voice: "mana", text: "بارانِ ریزی روی آسفالتِ خیسِ خیابان می‌بارد و هوا بسیار دلپذیر است." },
+  { label: "Mana (Human) · ژ", voice: "mana", text: "رژیم غذایی سالم و پژوهش علمی برای سلامتی بسیار مهم است." },
+  { label: "Maya · English Demo", voice: "en_f2", text: "Hello! Welcome to tiny-ava, an ultra-fast offline voice running right on your phone." },
+  { label: "Maya · TalkBack UI", voice: "en_f2", text: "Something did not go through. Please check your network connection and try again." },
+];
+
+const $ = id => document.getElementById(id);
+let selectedVoice = "parisa", ready = false, activeId = 0, wavUrl = null, curAudio = null;
+
+document.querySelectorAll(".vbtn").forEach(b => {
+  b.onclick = () => {
+    selectedVoice = b.dataset.voice;
+    document.querySelectorAll(".vbtn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+  };
+});
+
+SAMPLES.forEach(s => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.textContent = s.label;
+  b.onclick = () => {
+    $("text").value = s.text;
+    selectedVoice = s.voice;
+    document.querySelectorAll(".vbtn").forEach(x => x.classList.toggle("active", x.dataset.voice === s.voice));
+  };
+  $("samples").appendChild(b);
+});
+
+$("speed").oninput = () => $("speedVal").textContent = Number($("speed").value).toFixed(2) + "×";
+$("pitch").oninput = () => { const v = Number($("pitch").value); $("pitchVal").textContent = (v > 0 ? "+" : "") + v.toFixed(1) + " st"; };
+$("range").oninput = () => $("rangeVal").textContent = Number($("range").value).toFixed(2);
+
+function encodeWav(samples, sr) {
+  const buf = new ArrayBuffer(44 + samples.length * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + samples.length * 2, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, "data"); v.setUint32(40, samples.length * 2, true);
+  for (let i = 0, o = 44; i < samples.length; i++, o += 2) {
+    const x = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(o, x < 0 ? x * 0x8000 : x * 0x7fff, true);
+  }
+  return new Blob([buf], { type: "audio/wav" });
+}
+
+function drawWave(samples, progress = 0) {
+  const cv = $("wave"), dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth || 720, h = cv.clientHeight || 110;
+  cv.width = w * dpr; cv.height = h * dpr;
+  const ctx = cv.getContext("2d"); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, w, h);
+  const st = getComputedStyle(document.documentElement);
+  const accent = st.getPropertyValue("--accent").trim() || "#b4532a";
+  const line = st.getPropertyValue("--line").trim() || "#d8cfc4";
+  const bars = Math.min(180, Math.floor(w / 4)), step = Math.max(1, Math.floor(samples.length / bars));
+  const bw = w / bars, mid = h / 2;
+  for (let i = 0; i < bars; i++) {
+    let pk = 0;
+    for (let j = i * step; j < Math.min(samples.length, (i + 1) * step); j++) { const a = Math.abs(samples[j]); if (a > pk) pk = a; }
+    const bh = Math.max(3, pk * (h - 14));
+    ctx.fillStyle = (i / bars) <= progress ? accent : line;
+    ctx.beginPath(); ctx.roundRect(i * bw + 1, mid - bh / 2, Math.max(2, bw - 2), bh, 2); ctx.fill();
+  }
+}
+
+$("wave").addEventListener("click", (e) => {
+  const pl = $("player"); if (!pl.duration || !isFinite(pl.duration)) return;
+  const r = $("wave").getBoundingClientRect();
+  pl.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * pl.duration;
+  pl.play().catch(() => {});
+});
+$("player").addEventListener("timeupdate", () => { if (curAudio && $("player").duration) drawWave(curAudio, $("player").currentTime / $("player").duration); });
+
+function updateModelBox(state) {
+  if (state === "not_cached") {
+    $("modeltext").textContent = "Models (~46 MB) are not downloaded yet — fetched once and cached locally in this browser.";
+    $("dlmodel").hidden = false; $("dlmodel").disabled = false; $("rmmodel").hidden = true;
+  } else if (state === "downloading") {
+    $("modeltext").textContent = "Downloading and initializing v2 models in this browser (~46 MB)...";
+    $("dlmodel").hidden = false; $("dlmodel").disabled = true; $("rmmodel").hidden = true;
+  } else if (state === "ready") {
+    $("modeltext").textContent = "Models ready in this browser (~46 MB cached — runs 100% offline).";
+    $("dlmodel").hidden = true; $("rmmodel").hidden = false;
+  }
+}
+
+const worker = new Worker("worker.js");
+worker.onmessage = (ev) => {
+  const m = ev.data;
+  if (m.type === "cache_status") {
+    if (m.cached) { updateModelBox("downloading"); $("status").textContent = "Loading cached models..."; }
+    else { updateModelBox("not_cached"); $("status").textContent = ""; }
+  } else if (m.type === "status") {
+    $("status").textContent = m.text; $("status").className = "";
+    if (m.progress != null) { $("load").hidden = false; $("load").value = m.progress; }
+  } else if (m.type === "ready") {
+    ready = true; $("load").hidden = true; $("go").disabled = false;
+    updateModelBox("ready"); $("status").textContent = "Ready.";
+  } else if (m.type === "cache_cleared") {
+    ready = false; updateModelBox("not_cached"); $("status").textContent = "Models removed from browser cache.";
+  } else if (m.type === "done" && m.id === activeId) {
+    $("go").disabled = false; $("stop").hidden = true; $("load").hidden = true;
+    curAudio = m.audio;
+    const blob = encodeWav(m.audio, m.sampleRate);
+    if (wavUrl) URL.revokeObjectURL(wavUrl);
+    wavUrl = URL.createObjectURL(blob);
+    $("player").src = wavUrl; $("dl").href = wavUrl; $("dl").hidden = false;
+    const st = m.stats;
+    const vName = st.voice === "en_f2" ? "Maya" : st.voice === "mana" ? "Mana" : "Parisa";
+    $("dl").download = `tiny-ava-v2-${vName.toLowerCase()}.wav`;
+    $("out").hidden = false; drawWave(curAudio, 0);
+    $("stats").innerHTML = `
+      <div class="stat"><span class="l">Voice</span><b>${vName}</b><span class="c">24 kHz mono</span></div>
+      <div class="stat"><span class="l">Audio</span><b>${st.audioSec.toFixed(2)}s</b><span class="c">${st.sentences} sentence(s)</span></div>
+      <div class="stat"><span class="l">Total Time</span><b>${st.totalSec.toFixed(2)}s</b><span class="c">G2P ${st.g2pSec.toFixed(2)}s + TTS ${st.ttsSec.toFixed(2)}s</span></div>
+      <div class="stat"><span class="l">TTS Speed</span><b>${(st.audioSec / Math.max(st.ttsSec, 1e-4)).toFixed(1)}×</b><span class="c">End-to-end ${(st.audioSec / Math.max(st.totalSec, 1e-4)).toFixed(1)}× RT</span></div>
+    `;
+    $("phones").textContent = m.phones; $("phonesBox").hidden = false;
+    $("status").textContent = `Done in ${st.totalSec.toFixed(2)}s.`;
+    $("player").play().catch(() => {});
+  } else if (m.type === "error") {
+    $("go").disabled = false; $("stop").hidden = true; $("load").hidden = true;
+    $("status").textContent = m.message; $("status").className = "err";
+  }
+};
+
+$("dlmodel").onclick = () => { updateModelBox("downloading"); $("go").disabled = true; worker.postMessage({ type: "load" }); };
+$("rmmodel").onclick = (e) => { e.preventDefault(); worker.postMessage({ type: "clear_cache" }); };
+$("go").onclick = () => {
+  const txt = $("text").value.trim(); if (!txt) return;
+  activeId++; $("go").disabled = true; $("stop").hidden = false;
+  if (!ready) updateModelBox("downloading");
+  worker.postMessage({
+    type: "speak", id: activeId, text: txt, voice: selectedVoice,
+    speed: Number($("speed").value), pitchShift: Number($("pitch").value) * 0.058, pitchRange: Number($("range").value),
+  });
+};
+$("stop").onclick = () => { worker.postMessage({ type: "cancel", id: activeId }); activeId++; $("player").pause(); $("go").disabled = false; $("stop").hidden = true; $("status").textContent = "Stopped."; };
+
+worker.postMessage({ type: "check_cache" });
+</script>
 </body>
 </html>

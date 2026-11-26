@@ -46,8 +46,7 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
     private var ortEnv: OrtEnvironment? = null
     private var g2pEncoder: OrtSession? = null
     private var g2pDecoder: OrtSession? = null
-    private var ttsFaSession: OrtSession? = null
-    private var ttsEnSession: OrtSession? = null
+    private var ttsSession: OrtSession? = null
     private var enPhonemizer: EnglishPhonemizer? = null
 
     // LRU RAM cache for short TalkBack UI phrases (< 45 chars): instant <5ms playback
@@ -72,21 +71,19 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
             val modelDir = ensureModelsOnDisk()
             g2pEncoder = env.createSession(File(modelDir, "g2p_encoder.onnx").absolutePath, opts)
             g2pDecoder = env.createSession(File(modelDir, "g2p_decoder.onnx").absolutePath, opts)
-            ttsFaSession = env.createSession(File(modelDir, "tiny-ava-parisa.onnx").absolutePath, opts)
-            ttsEnSession = env.createSession(File(modelDir, "tiny-voca-en.onnx").absolutePath, opts)
+            ttsSession = env.createSession(File(modelDir, "tiny-ava-v2.onnx").absolutePath, opts)
             enPhonemizer = EnglishPhonemizer.loadFromAssets(appContext)
             isLoaded = true
         }
     }
 
     private fun ensureModelsOnDisk(): File {
-        val dir = File(appContext.filesDir, "tiny_ava_models_v3")
+        val dir = File(appContext.filesDir, "tiny_ava_models_v4")
         if (!dir.exists()) dir.mkdirs()
         val files = listOf(
             "models/g2p_encoder.onnx" to "g2p_encoder.onnx",
             "models/g2p_decoder.onnx" to "g2p_decoder.onnx",
-            "models/tiny-ava-parisa.onnx" to "tiny-ava-parisa.onnx",
-            "models/en/tiny-voca-en.onnx" to "tiny-voca-en.onnx",
+            "models/tiny-ava-v2.onnx" to "tiny-ava-v2.onnx",
         )
         for ((assetPath, outName) in files) {
             val out = File(dir, outName)
@@ -195,7 +192,7 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
         val pitchRange = settings.pitchRange.coerceIn(0.7f, 1.4f)
 
         val cacheKey = if (settings.enablePhraseCache && cleanedRaw.length <= 45) {
-            "$cleanedRaw|${defaultLang.name}|${settings.enableEnglishVoice}|${"%.2f".format(targetSpeed)}|${"%.1f".format(pitchSt)}"
+            "$cleanedRaw|${settings.persianVoice.name}|${defaultLang.name}|${settings.enableEnglishVoice}|${"%.2f".format(targetSpeed)}|${"%.1f".format(pitchSt)}"
         } else null
 
         if (cacheKey != null) {
@@ -316,7 +313,15 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
 
         return synchronized(lock) {
             if (isCancelled()) return FloatArray(0)
-            runTtsOnnx(ttsFaSession!!, tokenized.tokenIds, tokenized.stressIds, 0L, neuralSpeed, pitchSt * 0.058f, pitchRange)
+            runTtsOnnx(
+                ttsSession!!,
+                tokenized.tokenIds,
+                tokenized.stressIds,
+                settings.persianVoice.onnxId, // 0L = Parisa, 2L = Mana
+                neuralSpeed,
+                pitchSt * 0.058f,
+                pitchRange,
+            )
         }
     }
 
@@ -332,8 +337,8 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
         if (tok.tokenIds.size > MAX_TOKENS || isCancelled()) return FloatArray(0)
         return synchronized(lock) {
             if (isCancelled()) return FloatArray(0)
-            // voice = 0 (F2 female, matching Parisa's female voice seamlessly)
-            runTtsOnnx(ttsEnSession!!, tok.tokenIds, tok.stressIds, 0L, neuralSpeed, pitchSt * 0.058f, pitchRange)
+            // voice = 3L (Maya — American English female inside unified tiny-ava-v2.onnx)
+            runTtsOnnx(ttsSession!!, tok.tokenIds, tok.stressIds, 3L, neuralSpeed, pitchSt * 0.058f, pitchRange)
         }
     }
 

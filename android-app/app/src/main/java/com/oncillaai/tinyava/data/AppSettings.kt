@@ -13,6 +13,12 @@ enum class AppThemeMode(val labelFa: String) {
     HIGH_CONTRAST("کنتراست بالا"),
 }
 
+/** Voices exposed in tiny-ava v2 (`tiny-ava-v2.onnx`). */
+enum class AvaPersianVoice(val onnxId: Long, val labelFa: String, val subtitleFa: String) {
+    PARISA(0L, "پریسا (زن)", "صدای گرم فارسی"),
+    MANA(2L, "مانا (مرد)", "صدای طبیعی استودیویی"),
+}
+
 data class DictEntry(
     val source: String,
     val replacement: String,
@@ -20,6 +26,7 @@ data class DictEntry(
 )
 
 data class SettingsState(
+    val persianVoice: AvaPersianVoice = AvaPersianVoice.PARISA,
     val speed: Float = 1.2f,
     val pitchSemitones: Float = 0.0f,
     val pitchRange: Float = 1.05f,
@@ -47,9 +54,12 @@ class SettingsStore(context: Context) {
     private fun load(): SettingsState {
         val themeName = prefs.getString("theme_mode", AppThemeMode.LIGHT.name) ?: AppThemeMode.LIGHT.name
         val theme = runCatching { AppThemeMode.valueOf(themeName) }.getOrDefault(AppThemeMode.LIGHT)
+        val voiceName = prefs.getString("persian_voice", AvaPersianVoice.PARISA.name) ?: AvaPersianVoice.PARISA.name
+        val persianVoice = runCatching { AvaPersianVoice.valueOf(voiceName) }.getOrDefault(AvaPersianVoice.PARISA)
         val dictJson = prefs.getString("custom_dict", null)
         val dict = if (dictJson != null) parseDict(dictJson) else DEFAULT_CUSTOM_DICT
         return SettingsState(
+            persianVoice = persianVoice,
             speed = prefs.getFloat("speed", 1.2f).coerceIn(0.7f, 3.5f),
             pitchSemitones = prefs.getFloat("pitch_st", 0.0f).coerceIn(-4.0f, 4.0f),
             pitchRange = prefs.getFloat("pitch_range", 1.05f).coerceIn(0.7f, 1.4f),
@@ -66,6 +76,7 @@ class SettingsStore(context: Context) {
         val next = transform(_state.value)
         _state.value = next
         prefs.edit()
+            .putString("persian_voice", next.persianVoice.name)
             .putFloat("speed", next.speed)
             .putFloat("pitch_st", next.pitchSemitones)
             .putFloat("pitch_range", next.pitchRange)

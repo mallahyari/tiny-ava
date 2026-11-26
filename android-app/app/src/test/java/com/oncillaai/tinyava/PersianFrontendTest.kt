@@ -40,8 +40,8 @@ class PersianFrontendTest {
 
     @Test
     fun testPhonemeInventoryAndStressEzafe() {
-        assertEquals(46, PersianPhonemeMapper.SYMBOLS.size)
-        assertEquals(29, PersianPhonemeMapper.PHONE_SET.size)
+        assertEquals(84, PersianPhonemeMapper.SYMBOLS.size)
+        assertEquals(67, PersianPhonemeMapper.PHONE_SET.size)
 
         val words = PersianPhonemeMapper.repr1ToWords("ketAb-e jadid-e ?az ba?d")
         assertEquals(4, words.size)
