@@ -7,6 +7,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.speech.tts.Voice
 import com.oncillaai.tinyava.TinyAvaApp
+import com.oncillaai.tinyava.data.AvaPersianVoice
 import com.oncillaai.tinyava.engine.LanguageSpanSplitter
 import com.oncillaai.tinyava.engine.PersianTextNormalizer
 import com.oncillaai.tinyava.engine.TinyAvaEngine
@@ -66,7 +67,10 @@ class TinyAvaTtsService : TextToSpeechService() {
     override fun onGetDefaultVoiceNameFor(lang: String?, country: String?, variant: String?): String? {
         val l = lang?.lowercase(Locale.ROOT) ?: return null
         return when (l) {
-            "fas", "fa", "per" -> parisaVoice.name
+            "fas", "fa", "per" -> {
+                val selected = (application as? TinyAvaApp)?.settingsStore?.state?.value?.persianVoice
+                if (selected == AvaPersianVoice.MANA) manaVoice.name else parisaVoice.name
+            }
             "eng", "en" -> mayaVoice.name
             else -> null
         }
@@ -94,7 +98,8 @@ class TinyAvaTtsService : TextToSpeechService() {
         if (request == null || callback == null) return
         stopped.set(false)
 
-        val text = request.charSequenceText?.toString()?.trim().orEmpty()
+        val rawChars = request.charSequenceText?.toString().orEmpty()
+        val text = if (rawChars == "\u200c") rawChars else rawChars.trim()
         if (text.isEmpty()) {
             callback.start(TinyAvaEngine.SAMPLE_RATE, AudioFormat.ENCODING_PCM_16BIT, 1)
             callback.done()
@@ -108,11 +113,19 @@ class TinyAvaTtsService : TextToSpeechService() {
         val sysPitchSt = (12.0 * ln(sysPitchRatio.toDouble()) / ln(2.0)).toFloat()
         val effectivePitchSt = (settings.pitchSemitones + sysPitchSt).coerceIn(-6f, 6f)
 
+        // Honor explicit Android voiceName (e.g. Multilingual TTS / Android voice picker)
+        val reqVoice = request.voiceName.orEmpty()
+        val persianVoiceOverride: AvaPersianVoice? = when (reqVoice) {
+            parisaVoice.name -> AvaPersianVoice.PARISA
+            manaVoice.name -> AvaPersianVoice.MANA
+            else -> null
+        }
         val reqLang = request.language?.lowercase(Locale.ROOT).orEmpty()
-        val defaultLang = if (reqLang == "eng" || reqLang == "en") {
-            LanguageSpanSplitter.Lang.EN
-        } else {
-            LanguageSpanSplitter.Lang.FA
+        val defaultLang = when {
+            reqVoice == mayaVoice.name -> LanguageSpanSplitter.Lang.EN
+            reqVoice == parisaVoice.name || reqVoice == manaVoice.name -> LanguageSpanSplitter.Lang.FA
+            reqLang == "eng" || reqLang == "en" -> LanguageSpanSplitter.Lang.EN
+            else -> LanguageSpanSplitter.Lang.FA
         }
 
         callback.start(TinyAvaEngine.SAMPLE_RATE, AudioFormat.ENCODING_PCM_16BIT, 1)
@@ -131,6 +144,7 @@ class TinyAvaTtsService : TextToSpeechService() {
                     speedOverride = effectiveSpeed,
                     pitchSemitonesOverride = effectivePitchSt,
                     defaultLang = defaultLang,
+                    persianVoiceOverride = persianVoiceOverride,
                     isCancelled = { stopped.get() },
                 )
                 if (stopped.get()) {

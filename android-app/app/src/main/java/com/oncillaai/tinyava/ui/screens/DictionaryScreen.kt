@@ -19,7 +19,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -51,6 +53,8 @@ fun DictionaryScreen(
     onAdd: (source: String, replacement: String, note: String) -> Unit,
     onEdit: (oldSource: String, newSource: String, newReplacement: String, note: String) -> Unit,
     onDelete: (source: String) -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
     onTestSpeak: (String) -> Unit,
 ) {
     val c = LocalAvaColors.current
@@ -74,6 +78,38 @@ fun DictionaryScreen(
             Icon(Icons.Rounded.Add, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text("افزودن کلمه جدید", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            OutlinedButton(
+                onClick = onExport,
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.5.dp, c.line),
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 50.dp)
+                    .semantics { contentDescription = "خروجی گرفتن از واژه‌نامه به صورت فایل JSON" },
+            ) {
+                Icon(Icons.Rounded.Upload, contentDescription = null, tint = c.ink)
+                Spacer(Modifier.width(6.dp))
+                Text("خروجی (Export)", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = c.ink)
+            }
+            OutlinedButton(
+                onClick = onImport,
+                shape = RoundedCornerShape(14.dp),
+                border = BorderStroke(1.5.dp, c.line),
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = 50.dp)
+                    .semantics { contentDescription = "وارد کردن واژه‌نامه از فایل JSON یا متنی" },
+            ) {
+                Icon(Icons.Rounded.Download, contentDescription = null, tint = c.ink)
+                Spacer(Modifier.width(6.dp))
+                Text("ورودی (Import)", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = c.ink)
+            }
         }
 
         LazyColumn(

@@ -260,6 +260,12 @@ object PersianTextNormalizer {
     }
 
     fun splitSentences(text: String): List<String> {
+        if (text == "\u200c") return listOf(text)
+        val trimmedInput = text.trim()
+        if (trimmedInput.isEmpty()) return emptyList()
+        if (PersianKeyboardPhonemes.isSingleKeyboardChar(trimmedInput)) {
+            return listOf(trimmedInput)
+        }
         val cleaned = text.replace(Regex("[\\s\\ufeff]+"), " ").trim()
         if (cleaned.isEmpty()) return emptyList()
         val raw = cleaned.split(Regex("(?<=[.!؟?…][\"')\\]»]?)\\s+"))

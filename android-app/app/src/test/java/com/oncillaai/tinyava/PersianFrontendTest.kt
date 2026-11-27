@@ -85,4 +85,49 @@ class PersianFrontendTest {
         assertTrue(fast2x.all { it.isFinite() })
         assertTrue(fast3x.all { it.isFinite() })
     }
+
+    @Test
+    fun testPersianKeyboardSingleCharPronunciations() {
+        val kb = com.oncillaai.tinyava.engine.PersianKeyboardPhonemes
+        // Every standard Persian letter must map to unambiguous non-empty Repr. 1 phonemes -> valid tokens
+        val alphabet = "آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی"
+        for (ch in alphabet) {
+            val repr = kb.lookupSingleCharRepr1(ch.toString())
+            assertNotNull("Missing keyboard pronunciation for $ch", repr)
+            val words = PersianPhonemeMapper.repr1ToWords(repr!!)
+            val seq = PersianPhonemeMapper.buildTokenSequence(listOf(false to words))
+            assertNotNull("Invalid phoneme sequence for $ch -> $repr", seq)
+        }
+        // Homophonous letters MUST have distinct spoken names for blind typing!
+        assertTrue(kb.lookupSingleCharRepr1("س") != kb.lookupSingleCharRepr1("ص"))
+        assertTrue(kb.lookupSingleCharRepr1("س") != kb.lookupSingleCharRepr1("ث"))
+        assertTrue(kb.lookupSingleCharRepr1("ت") != kb.lookupSingleCharRepr1("ط"))
+        assertTrue(kb.lookupSingleCharRepr1("ح") != kb.lookupSingleCharRepr1("ه"))
+        assertTrue(kb.lookupSingleCharRepr1("ز") != kb.lookupSingleCharRepr1("ذ"))
+        assertTrue(kb.lookupSingleCharRepr1("ز") != kb.lookupSingleCharRepr1("ض"))
+        assertTrue(kb.lookupSingleCharRepr1("ق") != kb.lookupSingleCharRepr1("غ"))
+        // ZWNJ, diacritics, and punctuation survive splitSentences and map cleanly
+        assertEquals(listOf("\u200c"), PersianTextNormalizer.splitSentences("\u200c"))
+        assertEquals("nim fAsele", kb.lookupSingleCharRepr1("\u200c"))
+        assertEquals(listOf("؟"), PersianTextNormalizer.splitSentences("؟"))
+        assertEquals("alAmat-e so?Al", kb.lookupSingleCharRepr1("؟"))
+        // Multi-character Persian words and Latin letters MUST NOT trigger Persian single-char table
+        assertEquals(null, kb.lookupSingleCharRepr1("سلام"))
+        assertEquals(null, kb.lookupSingleCharRepr1("a"))
+    }
+
+    @Test
+    fun testDictionaryExportImportFlexible() {
+        val ds = com.oncillaai.tinyava.data.DictionarySerializer
+        val entries = listOf(
+            com.oncillaai.tinyava.data.DictEntry("تست", "تُست", "تصحیح"),
+            com.oncillaai.tinyava.data.DictEntry("Wi-Fi", "وای‌فای", "سیستم"),
+        )
+        // Line-based `source=replacement` & TSV import
+        val parsedTxt = ds.parseFlexible("# comment\nتست=تُست\nWi-Fi\tوای‌فای\tسیستم\n")
+        assertEquals(2, parsedTxt.size)
+        assertEquals("تُست", parsedTxt[0].replacement)
+        assertEquals("وای‌فای", parsedTxt[1].replacement)
+        assertTrue(ds.toPrettyJson(entries).contains("وای‌فای"))
+    }
 }

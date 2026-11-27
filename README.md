@@ -7,7 +7,7 @@
 An **8.2M-parameter (`34.4 MB` ONNX)** bilingual **Persian (Farsi) + English** text-to-speech model trained **from scratch**, built on top of [`tiny-voca`](https://github.com/n4ze3m/tiny-voca). It packs **3 voices in ONE model** — **Parisa** (Persian female), **Mana** (real studio human Persian female), and **Maya** (American English female) — running **34×–81× faster than real time on CPU**, 100% offline in the browser or on Android.
 
 - **Live in-browser demo (3 voices, FA + EN):** https://huggingface.co/spaces/mehdi-hf/tiny-ava-demo
-- **Android App (Offline Bilingual TalkBack TTS):** [Download `tiny-ava-v2.0.0-arm64.apk` (71 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.0.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
+- **Android App (Offline Bilingual TalkBack TTS):** [Download `tiny-ava-v2.1.0-arm64.apk` (71 MB)](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.1.0-arm64.apk) · [All Releases](https://github.com/mallahyari/tiny-ava/releases)
 - **Hugging Face model:** https://huggingface.co/mehdi-hf/tiny-ava
 
 ![tiny-ava v2 in-browser demo (Parisa, Mana, Maya)](assets/demo-screenshot.png)
@@ -25,11 +25,11 @@ The [`android-app/`](android-app/) app bundles our unified **`tiny-ava-v2.onnx`*
 - **3 Voices in ONE Unified Model:** Choose between **پریسا (Parisa, warm female)** and **مانا (Mana, real studio human female)** for Persian, while English spans speak automatically with **مایا (Maya, American English)** — 7 MB smaller than v1.1!
 - **System-wide Dual-Language Android `TextToSpeechService` (`fa-IR` + `en-US`):** Plugs directly into **TalkBack**, WhatsApp, Telegram, X, and Chrome — 100% offline with clean emoji/symbol stripping.
 - **Glitch-Free High Speed up to `3.5×` (Sonic WSOLA):** Caps neural speed at `1.30×` and applies pitch-preserving Sonic WSOLA waveform time-stretching for `1.30× → 3.5×` (`1.0× / 1.5× / 2.0× / 2.5× / 3.0×` TalkBack presets).
-- **Accessibility-first RTL Persian UI:** Warm Light, Dark, and **WCAG AAA High-Contrast (Yellow/Black)** themes, large 56–64dp touch targets, 1-tap **Clipboard Paste & Read**, Android **Share Intent** (*«خواندن با آوا»*), Save WAV, and an editable **Custom Pronunciation Dictionary** (`Wi-Fi ← وای‌فای`, `تست ← تُست`, etc.).
-- **Built-in Persian TalkBack Normalizer:** Converts numbers, clock times (`۱۴:۳۰`), percentages (`۸۵٪`), and common English UI words automatically, plus a 256-phrase LRU RAM cache for `<5 ms` repeated menu buttons.
+- **Accessibility-first RTL Persian UI:** Warm Light, Dark, and **WCAG AAA High-Contrast (Yellow/Black)** themes, large 56–64dp touch targets, 1-tap **Clipboard Paste & Read**, Android **Share Intent** (*«خواندن با آوا»*), Save WAV, and an editable **Custom Pronunciation Dictionary** with **Export / Import** (`JSON` or `word=pronunciation` text).
+- **Blind-Friendly Persian Keyboard Typing & TalkBack Normalizer:** Unambiguous single-key Persian letter names (`الف`, `بِ`, `سین / صاد / ثِ سه‌نقطه`, `زِ / ذال / ضاد / ظا`, `تِ / طا`, `حِ جیمی / هِ`, `قاف / غِین`, `نیم‌فاصله`, diacritics, and punctuation) that bypass G2P for `<2 ms` cached key taps, plus number/time/percent conversion and external `request.voiceName` routing (Multilingual TTS compatible).
 
 ### Install on Android
-1. Download **[`tiny-ava-v2.0.0-arm64.apk`](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.0.0-arm64.apk)** (71 MB — recommended for almost all modern Android phones; use `universal` only for older 32-bit devices) and tap to install.
+1. Download **[`tiny-ava-v2.1.0-arm64.apk`](https://github.com/mallahyari/tiny-ava/releases/latest/download/tiny-ava-v2.1.0-arm64.apk)** (71 MB — recommended for almost all modern Android phones; use `universal` only for older 32-bit devices) and tap to install.
 2. Open **آوا (tiny-ava)** → pick **پریسا** or **مانا** in the **صدا** tab → tap **«انتخاب آوا به عنوان موتور TalkBack»** (or go to **Settings → Accessibility → Text-to-speech output → Preferred engine → آوا**).
 3. Tap **Listen to an example** or enable **TalkBack** — works completely offline!
 

@@ -121,32 +121,122 @@ class SettingsStore(context: Context) {
         }
     }
 
-    private fun serializeDict(entries: List<DictEntry>): String {
-        val arr = JSONArray()
-        for (e in entries) {
-            arr.put(
-                JSONObject()
-                    .put("source", e.source)
-                    .put("replacement", e.replacement)
-                    .put("note", e.note)
-            )
+    /** Export custom dictionary as pretty-printed UTF-8 JSON for backup/sharing. */
+    fun exportDictionaryJson(): String = DictionarySerializer.toPrettyJson(_state.value.customDictionary)
+
+    /**
+     * Import dictionary entries from JSON array OR plain text (`source=replacement` / `source\treplacement`).
+     * Merges imported entries on top of existing ones (updating duplicates case-insensitively).
+     * Returns the number of valid entries imported.
+     */
+    fun importDictionary(raw: String): Int {
+        val imported = DictionarySerializer.parseFlexible(raw)
+        if (imported.isEmpty()) return 0
+        update { cur ->
+            val merged = LinkedHashMap<String, DictEntry>()
+            for (e in imported) merged[e.source.lowercase()] = e
+            for (e in cur.customDictionary) {
+                val key = e.source.lowercase()
+                if (key !in merged) merged[key] = e
+            }
+            cur.copy(customDictionary = merged.values.toList())
         }
-        return arr.toString()
+        return imported.size
     }
 
-    private fun parseDict(raw: String): List<DictEntry> = runCatching {
-        val arr = JSONArray(raw)
-        buildList {
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                add(
-                    DictEntry(
-                        source = obj.getString("source"),
-                        replacement = obj.getString("replacement"),
-                        note = obj.optString("note", ""),
-                    )
-                )
+    private fun serializeDict(entries: List<DictEntry>): String = DictionarySerializer.toCompactJson(entries)
+
+    private fun parseDict(raw: String): List<DictEntry> =
+        DictionarySerializer.parseFlexible(raw).ifEmpty { DEFAULT_CUSTOM_DICT }
+}
+
+object DictionarySerializer {
+    private fun escapeJson(s: String): String = buildString(s.length + 4) {
+        for (ch in s) {
+            when (ch) {
+                '\\' -> append("\\\\")
+                '"' -> append("\\\"")
+                '\n' -> append("\\n")
+                '\r' -> append("\\r")
+                '\t' -> append("\\t")
+                else -> append(ch)
             }
         }
-    }.getOrDefault(DEFAULT_CUSTOM_DICT)
+    }
+
+    fun toCompactJson(entries: List<DictEntry>): String = buildString {
+        append('[')
+        entries.forEachIndexed { idx, e ->
+            if (idx > 0) append(',')
+            append("{\"source\":\"").append(escapeJson(e.source))
+                .append("\",\"replacement\":\"").append(escapeJson(e.replacement))
+                .append("\",\"note\":\"").append(escapeJson(e.note))
+                .append("\"}")
+        }
+        append(']')
+    }
+
+    fun toPrettyJson(entries: List<DictEntry>): String = buildString {
+        append("[\n")
+        entries.forEachIndexed { idx, e ->
+            append("  {\n")
+            append("    \"source\": \"").append(escapeJson(e.source)).append("\",\n")
+            append("    \"replacement\": \"").append(escapeJson(e.replacement)).append("\",\n")
+            append("    \"note\": \"").append(escapeJson(e.note)).append("\"\n")
+            append("  }")
+            if (idx < entries.lastIndex) append(',')
+            append('\n')
+        }
+        append(']')
+    }
+
+    /** Accepts JSON array of objects, JSON object `{"src":"dst"}`, or line-based `src=dst` / `src\tdst`. */
+    fun parseFlexible(raw: String): List<DictEntry> {
+        val trimmed = raw.trim().removePrefix("\uFEFF")
+        if (trimmed.isEmpty()) return emptyList()
+        if (trimmed.startsWith("[")) {
+            return runCatching {
+                val arr = JSONArray(trimmed)
+                buildList {
+                    for (i in 0 until arr.length()) {
+                        val obj = arr.optJSONObject(i) ?: continue
+                        val s = obj.optString("source", "").trim()
+                        val r = obj.optString("replacement", "").trim()
+                        if (s.isNotEmpty() && r.isNotEmpty()) {
+                            add(DictEntry(s, r, obj.optString("note", "وارد شده")))
+                        }
+                    }
+                }
+            }.getOrDefault(emptyList())
+        }
+        if (trimmed.startsWith("{")) {
+            return runCatching {
+                val obj = JSONObject(trimmed)
+                buildList {
+                    val keys = obj.keys()
+                    while (keys.hasNext()) {
+                        val k = keys.next().trim()
+                        val v = obj.optString(k, "").trim()
+                        if (k.isNotEmpty() && v.isNotEmpty()) add(DictEntry(k, v, "وارد شده"))
+                    }
+                }
+            }.getOrDefault(emptyList())
+        }
+        // Fallback: line-by-line `source=replacement` or `source\treplacement`
+        return buildList {
+            for (line in trimmed.lineSequence()) {
+                val l = line.trim()
+                if (l.isEmpty() || l.startsWith("#")) continue
+                val parts = when {
+                    '\t' in l -> l.split('\t', limit = 3)
+                    '=' in l -> l.split('=', limit = 2)
+                    else -> continue
+                }
+                val s = parts[0].trim()
+                val r = parts.getOrNull(1)?.trim().orEmpty()
+                val note = parts.getOrNull(2)?.trim().orEmpty().ifEmpty { "وارد شده" }
+                if (s.isNotEmpty() && r.isNotEmpty()) add(DictEntry(s, r, note))
+            }
+        }
+    }
 }

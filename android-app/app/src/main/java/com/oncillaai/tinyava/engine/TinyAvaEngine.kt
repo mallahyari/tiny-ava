@@ -5,6 +5,7 @@ import ai.onnxruntime.OrtEnvironment
 import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.util.LruCache
+import com.oncillaai.tinyava.data.AvaPersianVoice
 import com.oncillaai.tinyava.data.SettingsState
 import java.io.File
 import java.io.FileOutputStream
@@ -177,22 +178,60 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
         speedOverride: Float? = null,
         pitchSemitonesOverride: Float? = null,
         defaultLang: LanguageSpanSplitter.Lang = LanguageSpanSplitter.Lang.FA,
+        persianVoiceOverride: AvaPersianVoice? = null,
         isCancelled: () -> Boolean = { false },
     ): FloatArray {
         ensureLoaded()
         if (isCancelled()) return FloatArray(0)
 
-        val cleanedRaw = LanguageSpanSplitter.stripEmojisAndNoise(rawSentence)
-        if (cleanedRaw.isBlank()) return FloatArray(0)
-
+        val activePersianVoice = persianVoiceOverride ?: settings.persianVoice
         val targetSpeed = (speedOverride ?: settings.speed).coerceIn(0.6f, 3.5f)
         val neuralSpeed = targetSpeed.coerceIn(MIN_NEURAL_SPEED, MAX_NEURAL_SPEED)
         val sonicFactor = targetSpeed / neuralSpeed
         val pitchSt = (pitchSemitonesOverride ?: settings.pitchSemitones).coerceIn(-6.0f, 6.0f)
         val pitchRange = settings.pitchRange.coerceIn(0.7f, 1.4f)
 
+        // FAST PATH: Single-character Persian keyboard typing & TalkBack exploration!
+        // Checked BEFORE emoji/noise stripping so ZWNJ (نیم‌فاصله), diacritics, & punctuation work reliably.
+        val kbRepr1 = PersianKeyboardPhonemes.lookupSingleCharRepr1(rawSentence, defaultLang)
+        if (kbRepr1 != null) {
+            val kbKey = "KB|$rawSentence|${activePersianVoice.name}|${"%.2f".format(targetSpeed)}|${"%.1f".format(pitchSt)}"
+            if (settings.enablePhraseCache) {
+                phraseCache.get(kbKey)?.let { return it }
+            }
+            val words = PersianPhonemeMapper.repr1ToWords(kbRepr1)
+            val tokenized = PersianPhonemeMapper.buildTokenSequence(listOf(false to words))
+                ?: return FloatArray(0)
+            val rawWave = synchronized(lock) {
+                if (isCancelled()) return FloatArray(0)
+                runTtsOnnx(
+                    ttsSession!!,
+                    tokenized.tokenIds,
+                    tokenized.stressIds,
+                    activePersianVoice.onnxId,
+                    neuralSpeed,
+                    pitchSt * 0.058f,
+                    pitchRange,
+                )
+            }
+            if (rawWave.isEmpty() || isCancelled()) return FloatArray(0)
+            val stretched = if (abs(sonicFactor - 1.0f) >= 0.02f) {
+                SonicTimeStretch.changeSpeed(rawWave, SAMPLE_RATE, sonicFactor)
+            } else {
+                rawWave
+            }
+            val clean = limitPeak(stretched)
+            if (settings.enablePhraseCache && clean.isNotEmpty()) {
+                phraseCache.put(kbKey, clean)
+            }
+            return clean
+        }
+
+        val cleanedRaw = LanguageSpanSplitter.stripEmojisAndNoise(rawSentence)
+        if (cleanedRaw.isBlank()) return FloatArray(0)
+
         val cacheKey = if (settings.enablePhraseCache && cleanedRaw.length <= 45) {
-            "$cleanedRaw|${settings.persianVoice.name}|${defaultLang.name}|${settings.enableEnglishVoice}|${"%.2f".format(targetSpeed)}|${"%.1f".format(pitchSt)}"
+            "$cleanedRaw|${activePersianVoice.name}|${defaultLang.name}|${settings.enableEnglishVoice}|${"%.2f".format(targetSpeed)}|${"%.1f".format(pitchSt)}"
         } else null
 
         if (cacheKey != null) {
@@ -231,6 +270,7 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
                 LanguageSpanSplitter.Lang.FA -> synthPersianSpan(
                     text = span.text,
                     settings = settings,
+                    persianVoice = activePersianVoice,
                     neuralSpeed = neuralSpeed,
                     pitchSt = pitchSt,
                     pitchRange = pitchRange,
@@ -280,6 +320,7 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
     private fun synthPersianSpan(
         text: String,
         settings: SettingsState,
+        persianVoice: AvaPersianVoice,
         neuralSpeed: Float,
         pitchSt: Float,
         pitchRange: Float,
@@ -317,7 +358,7 @@ class TinyAvaEngine private constructor(private val appContext: Context) {
                 ttsSession!!,
                 tokenized.tokenIds,
                 tokenized.stressIds,
-                settings.persianVoice.onnxId, // 0L = Parisa, 2L = Mana
+                persianVoice.onnxId, // 0L = Parisa, 2L = Mana
                 neuralSpeed,
                 pitchSt * 0.058f,
                 pitchRange,

@@ -4,6 +4,7 @@ import android.content.ClipboardManager
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -11,6 +12,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,6 +87,42 @@ class MainActivity : ComponentActivity() {
     private val player = SimpleAudioPlayer()
     private val sharedTextState = mutableStateOf<String?>(null)
 
+    private val exportDictLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri: Uri? ->
+        if (uri == null) return@registerForActivityResult
+        val app = application as TinyAvaApp
+        runCatching {
+            val json = app.settingsStore.exportDictionaryJson()
+            contentResolver.openOutputStream(uri)?.use { out ->
+                out.write(json.toByteArray(Charsets.UTF_8))
+            }
+            Toast.makeText(this, "واژه‌نامه با موفقیت ذخیره شد.", Toast.LENGTH_LONG).show()
+        }.onFailure {
+            Toast.makeText(this, "خطا در خروجی واژه‌نامه: ${it.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private val importDictLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) return@registerForActivityResult
+        val app = application as TinyAvaApp
+        runCatching {
+            val raw = contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+                .orEmpty()
+            val count = app.settingsStore.importDictionary(raw)
+            if (count > 0) {
+                app.engine.clearPhraseCache()
+                Toast.makeText(this, "$count مورد به واژه‌نامه اضافه شد.", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "فایل واژه‌نامه معتبر پیدا نشد (JSON یا خط‌به‌خط کلمه=تلفظ).", Toast.LENGTH_LONG).show()
+            }
+        }.onFailure {
+            Toast.makeText(this, "خطا در خواندن فایل: ${it.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIncomingIntent(intent)
@@ -103,6 +141,8 @@ class MainActivity : ComponentActivity() {
                     onOpenTtsSettings = { openAndroidTtsSettings() },
                     onReadClipboard = { readClipboardText() },
                     onSaveWavToDownloads = { samples -> saveWavToDownloads(samples) },
+                    onExportDictionary = { exportDictLauncher.launch("tiny-ava-dictionary.json") },
+                    onImportDictionary = { importDictLauncher.launch(arrayOf("application/json", "text/plain", "*/*")) },
                 )
             }
         }
@@ -176,6 +216,8 @@ private fun TinyAvaRoot(
     onOpenTtsSettings: () -> Unit,
     onReadClipboard: () -> String?,
     onSaveWavToDownloads: (FloatArray) -> String,
+    onExportDictionary: () -> Unit,
+    onImportDictionary: () -> Unit,
 ) {
     val c = LocalAvaColors.current
     val scope = rememberCoroutineScope()
@@ -489,6 +531,8 @@ private fun TinyAvaRoot(
                             app.settingsStore.removeDictEntry(s)
                             app.engine.clearPhraseCache()
                         },
+                        onExport = onExportDictionary,
+                        onImport = onImportDictionary,
                         onTestSpeak = { word -> speakSingle(word) },
                     )
                 }
